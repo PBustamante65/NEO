@@ -92,16 +92,16 @@ if st.button('Predict'):
         predictionlog  = model_log.predict(pipelined_data)
         
         if predictionlog[0] == 1:
-            logprediction_text = 'The predicted hazard for ' + name + ' using a logistic regression model is HIGH'
+            logprediction_text = 'The predicted hazard for ' + name + ' using a logistic regression model with an 85% accuracy is HIGH'
         else:
-            logprediction_text = 'The predicted hazard for ' + name + ' using a logistic regression model is LOW'
+            logprediction_text = 'The predicted hazard for ' + name + ' using a logistic regression model with an 85% accuracy is LOW'
 
         predictionsvm  = model_svm.predict(pipelined_data)
         
         if predictionsvm[0] == 1:
-            svmprediction_text = 'The predicted hazard for ' + name + ' using a support vector machine model is HIGH'
+            svmprediction_text = 'The predicted hazard for ' + name + ' using a support vector machine model with an 87% accuracy is HIGH'
         else:
-            svmprediction_text = 'The predicted hazard for ' + name + ' using a support vector machine model is LOW'
+            svmprediction_text = 'The predicted hazard for ' + name + ' using a support vector machine model with an 87% accuracy is LOW'
 
 
         col3, col4, col8 = st.columns(3)

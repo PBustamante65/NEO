@@ -17,7 +17,7 @@ from joblib import dump, load
 
 
 
-pipiline_path = '/PBustamante65/NEO/Exports/pipeline.sav'
+pipiline_path = 'Exports/pipeline.sav'
 
 with open(pipiline_path, 'rb') as file1:
     print(file1.read(100))  
@@ -27,7 +27,7 @@ try:
 except Exception as e:
     print("Failed to load pipeline:", e)
 
-model_path_log = 'PBustamante65/NEO/Exports/best_model_log.sav'
+model_path_log = 'Exports/best_model_log.sav'
 
 with open(model_path_log, 'rb') as file:
     print(file.read(100))  
@@ -37,7 +37,7 @@ try:
 except Exception as e:
     print("Failed to load logistic regression model:", e)
 
-model_path_svm = 'PBustamante65/NEO/Exports/svm.sav'
+model_path_svm = 'Exports/svm.sav'
 
 with open(model_path_svm, 'rb') as file:
     print(file.read(100))  

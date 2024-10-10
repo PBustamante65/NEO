@@ -8,7 +8,7 @@ The initial model employed by this application is a logistic regression , which 
 
 ## Support Vector Machine
 
-Additionally, the application uses a Support Vector Machine (SVM) model, specifically employing the Gaussian kernel, which has an approximate accuracy of 87%.
+Additionally, the application uses a Support Vector Machine (SVM) model, specifically employing the Gaussian kernel, which has an approximate accuracy of 88%.
 
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://irisclassification-qmrjl8zkbypcggcqmxewjz.streamlit.app/)

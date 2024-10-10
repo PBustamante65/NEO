@@ -99,9 +99,9 @@ if st.button('Predict'):
         predictionsvm  = model_svm.predict(pipelined_data)
         
         if predictionsvm[0] == 1:
-            svmprediction_text = 'The predicted hazard for ' + name + ' using a support vector machine model with an 87% accuracy is HIGH'
+            svmprediction_text = 'The predicted hazard for ' + name + ' using a support vector machine model with an 88% accuracy is HIGH'
         else:
-            svmprediction_text = 'The predicted hazard for ' + name + ' using a support vector machine model with an 87% accuracy is LOW'
+            svmprediction_text = 'The predicted hazard for ' + name + ' using a support vector machine model with an 88% accuracy is LOW'
 
 
         col3, col4, col8 = st.columns(3)

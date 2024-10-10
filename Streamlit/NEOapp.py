@@ -52,12 +52,18 @@ except Exception as e:
 
 st.set_page_config(page_title='Near Earth Objects hazard prediction', layout='wide')
 
+col10, col11, col12 = st.columns(3)
+
+with col10:
+    st.markdown('Carlos Patricio Castañeda Bustamante')
+with col11:
+    st.markdown('Maestria en ingenieria en computacion')
+with col12:
+    st.markdown('Universidad Autonoma de Chihuahua')
 
 st.title('Near Earth Objects hazard prediction 🌠')
 st.header('Input Features')
-st.markdown('<p style="text-align: center;"> '+ 'Carlos Patricio Castañeda Bustamante' , unsafe_allow_html=True)
-st.markdown('<p style="text-align: center;"> '+ 'Universidad autonoma de Chihuahua' , unsafe_allow_html=True)
-st.markdown('<p style="text-align: center;"> '+ 'Maestria en ingenieria en computacion' , unsafe_allow_html=True)
+
 col1, col2 = st.columns(2)
 
 

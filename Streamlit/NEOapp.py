@@ -55,7 +55,9 @@ st.set_page_config(page_title='Near Earth Objects hazard prediction', layout='wi
 
 st.title('Near Earth Objects hazard prediction 🌠')
 st.header('Input Features')
-
+st.markdown('<p style="text-align: center;"> '+ 'Carlos Patricio Castañeda Bustamante' , unsafe_allow_html=True)
+st.markdown('<p style="text-align: center;"> '+ 'Universidad autonoma de Chihuahua' , unsafe_allow_html=True)
+st.markdown('<p style="text-align: center;"> '+ 'Maestria en ingenieria en computacion' , unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 
 

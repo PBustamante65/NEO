@@ -19,12 +19,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from joblib import dump, load
 import os
+from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn import datasets
 from sklearn.linear_model import LogisticRegression
 from sklearn.datasets import load_iris
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.metrics import recall_score, f1_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -35,7 +36,9 @@ from imblearn.over_sampling import SMOTE
 from sklearn import svm
 from sklearn.svm import SVC
 import pickle as pkl
-import ast
+from imblearn.over_sampling import ADASYN
+from imblearn.under_sampling import TomekLinks
+from sklearn.ensemble import RandomForestClassifier
 
 
 
@@ -352,6 +355,14 @@ class OverallProcessor:
         self.df = pd.concat([pd.DataFrame(oversampled_Y), pd.DataFrame(oversampled_X)], axis=1)
         return self.df
     
+    def adasyn(self):
+        self.df_test = self.df.copy()
+
+        ada = ADASYN(sampling_strategy='minority', random_state=42)
+        oversampled_X, oversampled_Y = ada.fit_resample(self.df_test.drop('is_hazardous', axis=1), self.df_test['is_hazardous'])
+        self.df = pd.concat([pd.DataFrame(oversampled_Y), pd.DataFrame(oversampled_X)], axis=1)
+        return self.df
+    
 
 class scalesplit:
     def __init__(self, df):
@@ -396,33 +407,33 @@ class LogRegression:
         self.y_train = y_train
         self.y_test = y_test
 
-    def Regression(self):
+    def fit(self):
 
             def gridsearch():
-                logReg = LogisticRegression()
+#                 logReg = LogisticRegression()
 
-                param_grid = {'solver': ['liblinear', 'newton-cholesky'],
-              'penalty':['none', 'l2'],
-              'C':[0.001, 0.01, 0.1, 1, 10, 100],
-              'n_jobs': [8],
-              'random_state': [0, 42, 32],
-              'fit_intercept': [True, False],
-              'warm_start': [True, False]
-}
+#                 param_grid = {'solver': ['liblinear', 'newton-cholesky'],
+#               'penalty':['none', 'l2'],
+#               'C':[0.001, 0.01, 0.1, 1, 10, 100],
+#               'n_jobs': [8],
+#               'random_state': [0, 42, 32],
+#               'fit_intercept': [True, False],
+#               'warm_start': [True, False]
+# }
 
 
-                grid_search = GridSearchCV(logReg, param_grid, cv=5, verbose=0, n_jobs=-1)
-                grid_search.fit(self.X_train, self.y_train)
+#                 grid_search = GridSearchCV(logReg, param_grid, cv=5, verbose=0, n_jobs=-1)
+#                 grid_search.fit(self.X_train, self.y_train)
 
 
                 self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='liblinear', warm_start=True) 
 
 
-                print(f'Best parameters: {grid_search.best_params_}')
-                print(f'Best Score: {grid_search.best_score_}')
-                print(f'Best Estimator: {grid_search.best_estimator_} ')
+                # print(f'Best parameters: {grid_search.best_params_}')
+                # print(f'Best Score: {grid_search.best_score_}')
+                # print(f'Best Estimator: {grid_search.best_estimator_} ')
 
-            def fit(self):
+            def Regression(self):
 
                 best_model = self.best_estimator_
                 best_model.fit(self.X_train, self.y_train)
@@ -432,8 +443,9 @@ class LogRegression:
                 accuracy = accuracy_score(self.y_test, prediction)
                 recall = recall_score(prediction, self.y_test)
                 f1 = f1_score(prediction, self.y_test)
+                roc = roc_auc_score(self.y_test, prediction)
 
-                print (f'The accuracy score is {accuracy}, The recall score is {recall}, The f1 score is {f1}')
+                print (f'The accuracy score is {accuracy}, The recall score is {recall}, The f1 score is {f1}, The roc score is {roc}')
 
                 print(f'Classification Report: \n {classification_report(self.y_test, prediction)}')
 
@@ -447,5 +459,72 @@ class LogRegression:
                 sns.heatmap(cm2, annot=True, cmap='Blues')
                 
             gridsearch()
-            fit(self)
+            Regression(self)
+
+class supportvm:
+    def __init__(self, X_train, X_test, y_train, y_test):
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+
+    def fit(self):
+
+        svm = SVC(C=10000, random_state=42)
+        svm.fit(self.X_train, self.y_train)
+
+        prediction = svm.predict(self.X_test)
+
+        accuracy = accuracy_score(self.y_test, prediction)
+        recall = recall_score(prediction, self.y_test)
+        f1 = f1_score(prediction, self.y_test)
+        roc = roc_auc_score(self.y_test, prediction)
+
+        print (f'The accuracy score is {accuracy}, The recall score is {recall}, The f1 score is {f1}, The roc score is {roc}')
+
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}')
+
+        cm = confusion_matrix(self.y_test, prediction)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap='Blues')
+        plt.show()
+
+        cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
+
+        sns.heatmap(cm2, annot=True, cmap='Blues')
+
+class RandomForest:
+    def __init__(self, X_train, X_test, y_train, y_test):
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+
+    def fit(self):
+
+        randomforest = RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy',
+                       random_state=42, warm_start=True)
+        randomforest.fit(self.X_train, self.y_train)
+
+        prediction = randomforest.predict(self.X_test)
+
+        accuracy = accuracy_score(self.y_test, prediction)
+        recall = recall_score(prediction, self.y_test)
+        f1 = f1_score(prediction, self.y_test)
+        roc = roc_auc_score(self.y_test, prediction)
+
+        print (f'The accuracy score is {accuracy}, The recall score is {recall}, The f1 score is {f1}, The roc score is {roc}')
+
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}')
+
+        cm = confusion_matrix(self.y_test, prediction)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap='Blues')
+        plt.show()
+
+        cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
+
+        sns.heatmap(cm2, annot=True, cmap='Blues')
+
+        
     

@@ -416,6 +416,29 @@ class scalesplit:
         y_test = self.y_test
 
         return X_train, X_test, y_train, y_test
+    
+    def ttsplit(self):
+
+        def scale(self):
+
+            X = self.df.drop(columns=['is_hazardous'])
+
+            X_scale = StandardScaler().fit_transform(X)
+
+            return X_scale
+        
+        def split(self):
+
+            X = scale(self)
+            y = y = self.df['is_hazardous']
+
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+            
+            return X_train, X_test, y_train, y_test
+                
+        X_train, X_test, y_train, y_test = split(self)
+
+        return X_train, X_test, y_train, y_test
 
 class LogRegression:
     def __init__(self, X_train, X_test, y_train, y_test):

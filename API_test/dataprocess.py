@@ -466,8 +466,8 @@ class LogRegression:
 #                 grid_search.fit(self.X_train, self.y_train)
 
 
-                self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='liblinear', warm_start=True) 
-
+                # self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='liblinear', warm_start=True) 
+                self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='newton-cholesky', warm_start=True)
 
                 # print(f'Best parameters: {grid_search.best_params_}')
                 # print(f'Best Score: {grid_search.best_score_}')

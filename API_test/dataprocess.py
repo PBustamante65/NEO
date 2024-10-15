@@ -9,7 +9,7 @@ import seaborn as sns
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.model_selection import ShuffleSplit
 from sklearn.impute import SimpleImputer
 from pandas.plotting import scatter_matrix
@@ -39,6 +39,11 @@ import pickle as pkl
 from imblearn.over_sampling import ADASYN
 from imblearn.under_sampling import TomekLinks
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.metrics import r2_score,mean_absolute_error
+from sklearn.metrics import roc_curve, auc
+import warnings
+
 
 
 
@@ -362,6 +367,18 @@ class OverallProcessor:
         oversampled_X, oversampled_Y = ada.fit_resample(self.df_test.drop('is_hazardous', axis=1), self.df_test['is_hazardous'])
         self.df = pd.concat([pd.DataFrame(oversampled_Y), pd.DataFrame(oversampled_X)], axis=1)
         return self.df
+        
+    def rus(self):
+        self.df_test = self.df.copy()
+
+        X = self.df_test.drop(columns=['is_hazardous'])
+        y = self.df_test['is_hazardous']
+
+        rus = RandomUnderSampler(random_state=42)
+        X_resampled, y_resampled = rus.fit_resample(X,y)
+        self.df = pd.concat([pd.DataFrame(y_resampled), pd.DataFrame(X_resampled)], axis=1)
+        self.df.reset_index(drop=True, inplace=True)
+        return self.df
     
 
 class scalesplit:
@@ -435,6 +452,11 @@ class LogRegression:
 
             def Regression(self):
 
+                warnings.filterwarnings("ignore", message=".*'n_jobs' > 1 does not have any effect when 'solver' is set to 'liblinear'.*")
+
+                k = 5 
+                kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+
                 best_model = self.best_estimator_
                 best_model.fit(self.X_train, self.y_train)
 
@@ -445,9 +467,16 @@ class LogRegression:
                 f1 = f1_score(prediction, self.y_test)
                 roc = roc_auc_score(self.y_test, prediction)
 
-                print (f'The accuracy score is {accuracy}, The recall score is {recall}, The f1 score is {f1}, The roc score is {roc}')
+                print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The roc score is {roc}\n')
 
-                print(f'Classification Report: \n {classification_report(self.y_test, prediction)}')
+                print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
+
+                r2 =  cross_val_score(best_model,self.X_train,self.y_train,cv=kf,scoring='r2')
+                print(f'Cross validation score: {r2}\n')
+
+                np.mean(r2)
+
+                print(f'Mean cross validation score: {np.mean(r2)}\n')
 
                 cm = confusion_matrix(self.y_test, prediction)
                 disp = ConfusionMatrixDisplay(confusion_matrix=cm)
@@ -457,6 +486,7 @@ class LogRegression:
                 cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
 
                 sns.heatmap(cm2, annot=True, cmap='Blues')
+
                 
             gridsearch()
             Regression(self)
@@ -470,6 +500,11 @@ class supportvm:
 
     def fit(self):
 
+
+
+        k = 5 
+        kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+
         svm = SVC(C=10000, random_state=42)
         svm.fit(self.X_train, self.y_train)
 
@@ -480,9 +515,16 @@ class supportvm:
         f1 = f1_score(prediction, self.y_test)
         roc = roc_auc_score(self.y_test, prediction)
 
-        print (f'The accuracy score is {accuracy}, The recall score is {recall}, The f1 score is {f1}, The roc score is {roc}')
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The roc score is {roc}\n')
 
-        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}')
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
+
+        r2 =  cross_val_score(svm,self.X_train,self.y_train,cv=kf,scoring='r2')
+        print(f'Cross validation score: {r2}\n')
+
+        np.mean(r2)
+
+        print(f'Mean cross validation score: {np.mean(r2)}\n')
 
         cm = confusion_matrix(self.y_test, prediction)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)
@@ -502,6 +544,12 @@ class RandomForest:
 
     def fit(self):
 
+        warnings.filterwarnings("ignore", message=".*class_weight presets 'balanced' or 'balanced_subsample' are not recommended for warm_start if the fitted data differs from the full dataset.*", module="sklearn.ensemble._forest")
+
+
+        k = 5 
+        kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+
         randomforest = RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy',
                        random_state=42, warm_start=True)
         randomforest.fit(self.X_train, self.y_train)
@@ -513,9 +561,17 @@ class RandomForest:
         f1 = f1_score(prediction, self.y_test)
         roc = roc_auc_score(self.y_test, prediction)
 
-        print (f'The accuracy score is {accuracy}, The recall score is {recall}, The f1 score is {f1}, The roc score is {roc}')
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The roc score is {roc}\n')
 
-        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}')
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
+
+
+        r2 =  cross_val_score(randomforest,self.X_train,self.y_train,cv=kf,scoring='r2')
+        print(f'Cross validation score: {r2}\n')
+
+        np.mean(r2)
+
+        print(f'Mean cross validation score: {np.mean(r2)}\n')
 
         cm = confusion_matrix(self.y_test, prediction)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm)

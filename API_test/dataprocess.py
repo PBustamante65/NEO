@@ -521,14 +521,86 @@ class supportvm:
         self.y_train = y_train
         self.y_test = y_test
 
+
+    def gridsearch(self):
+
+        svm = SVC(kernel='rbf', random_state=42)
+
+
+        param_grid = {
+            'C' : [.001, .01, .1, 1, 10, 2000, 5000, 10000],
+            'gamma' : ['scale', 'auto']
+        }
+
+
+        grid_search = GridSearchCV(svm, param_grid, cv=5, n_jobs=-1, verbose=2)
+        print(grid_search)
+
+
+        grid_search.fit(self.X_train, self.y_train)
+
+        print(f"Best parameters: {grid_search.best_params_}")
+        print(f"Best score: {grid_search.best_score_}")
+        print(f"Best estimator: {grid_search.best_estimator_}\n")
+
+        grid_search.best_estimator_svm = grid_search.best_estimator_
+
+        return grid_search.best_estimator_svm
+
     def fit(self):
 
-
+        bestsvm = self.gridsearch()
 
         k = 5 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
-        svm = SVC(C=10000, random_state=42)
+        # svm = SVC(C=10000, random_state=42, kernel='rbf', gamma='scale')
+        svm = bestsvm
+        svm.fit(self.X_train, self.y_train)
+
+        prediction = svm.predict(self.X_test)
+
+        accuracy = accuracy_score(self.y_test, prediction)
+        recall = recall_score(prediction, self.y_test)
+        f1 = f1_score(prediction, self.y_test)
+        roc = roc_auc_score(self.y_test, prediction)
+
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The roc score is {roc}\n')
+
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
+
+        r2 =  cross_val_score(svm,self.X_train,self.y_train,cv=kf,scoring='r2')
+        print(f'Cross validation score: {r2}\n')
+
+        np.mean(r2)
+
+        print(f'Mean cross validation score: {np.mean(r2)}\n')
+
+        cm = confusion_matrix(self.y_test, prediction)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap='Blues')
+        plt.show()
+
+        cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
+
+        sns.heatmap(cm2, annot=True, cmap='Blues')
+
+class supportvm2:
+    def __init__(self, X_train, X_test, y_train, y_test):
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+
+    def fit(self):
+
+        bestsvm = SVC(C=10000, random_state=42)
+
+        k = 5 
+        kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+
+        # svm = SVC(C=10000, random_state=42, kernel='rbf', gamma='scale')
+        svm = bestsvm
         svm.fit(self.X_train, self.y_train)
 
         prediction = svm.predict(self.X_test)

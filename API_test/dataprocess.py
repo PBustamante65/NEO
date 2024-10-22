@@ -312,8 +312,8 @@ class OverallProcessor:
                 parts = self.df['estimated_diameter'].str.split(':')
                 self.df['estimated_diameter'] = parts.str[1] + parts.str[2] + parts.str[3] 
                 parts = self.df['estimated_diameter'].str.split(' ')
-                self.df['estimated_diameter_min'] = parts.str[2]
-                self.df['estimated_diameter_max'] = parts.str[4]
+                self.df['estimated_diameter_min'] = parts.str[2].astype(float)
+                self.df['estimated_diameter_max'] = parts.str[4].astype(float)
                 self.df.drop(columns=['estimated_diameter'], inplace=True)
 
 
@@ -326,11 +326,11 @@ class OverallProcessor:
             parts = self.df['orbital_data'].str.split(',')
             self.df['extracted_orbital_data'] = parts.str[7]+parts.str[10]+parts.str[12]+parts.str[15]+parts.str[17]
             parts = self.df['extracted_orbital_data'].str.split(' ')
-            self.df['minimum_orbit_intersection'] = parts.str[2]
-            self.df['eccentricity'] = parts.str[4]
-            self.df['inclination'] = parts.str[6]
-            self.df['perihilion_distance'] = parts.str[8]
-            self.df['aphelion_distance'] = parts.str[10]
+            self.df['minimum_orbit_intersection'] = parts.str[2].astype(float)
+            self.df['eccentricity'] = parts.str[4].astype(float)
+            self.df['inclination'] = parts.str[6].astype(float)
+            self.df['perihilion_distance'] = parts.str[8].astype(float)
+            self.df['aphelion_distance'] = parts.str[10].astype(float)
             self.df.drop(columns=['orbital_data', 'extracted_orbital_data'], inplace=True)   
 
 
@@ -350,6 +350,79 @@ class OverallProcessor:
         clean_df(self)
         encoder(self)
         return self.df  
+    
+    def clean2(self):
+
+        def explode_approach(self):
+            self.df['close_approach_data'] = self.df['close_approach_data'].apply(ast.literal_eval)
+            self.df = self.df.explode("close_approach_data").reset_index(drop=True)
+            normalized_close_approach_data = pd.json_normalize(self.df['close_approach_data'])
+            self.df = pd.concat([self.df.drop(columns=['close_approach_data']), normalized_close_approach_data], axis=1)
+            
+        
+        def clean_diameter(self):
+                self.df.drop(columns=['neo_reference_id', 'name_limited', 'links', 'nasa_jpl_url'], inplace=True)
+                self.df['estimated_diameter'] = self.df['estimated_diameter'].str.replace('\'', '')
+                self.df['estimated_diameter'] = self.df['estimated_diameter'].str.replace('{', '')
+                self.df['estimated_diameter'] = self.df['estimated_diameter'].str.replace('}', '')
+                parts = self.df['estimated_diameter'].str.split(',')
+                self.df['estimated_diameter'] = parts.str[0] + parts.str[1]
+                parts = self.df['estimated_diameter'].str.split(':')
+                self.df['estimated_diameter'] = parts.str[1] + parts.str[2] + parts.str[3] 
+                parts = self.df['estimated_diameter'].str.split(' ')
+                self.df['estimated_diameter_min'] = parts.str[2].astype(float)
+                self.df['estimated_diameter_max'] = parts.str[4].astype(float)
+                self.df.drop(columns=['estimated_diameter'], inplace=True)
+
+
+        def clean_orbits(self):
+            self.df['orbital_data'] = self.df['orbital_data'].str.replace('\'', '')
+            self.df['orbital_data'] = self.df['orbital_data'].str.replace('{', '')
+            self.df['orbital_data'] = self.df['orbital_data'].str.replace('}', '')
+            self.df['orbital_data'] = self.df['orbital_data'].str.replace('[', '')
+            self.df['orbital_data'] = self.df['orbital_data'].str.replace(']', '')
+            parts = self.df['orbital_data'].str.split(',')
+            self.df['extracted_orbital_data'] = parts.str[6:9].astype(str).str.cat(parts.str[10:20].astype(str), sep='')
+            self.df['extracted_orbital_data'] = self.df['extracted_orbital_data'].str.replace('\'', '')
+            self.df['extracted_orbital_data'] = self.df['extracted_orbital_data'].str.replace('{', '')
+            self.df['extracted_orbital_data'] = self.df['extracted_orbital_data'].str.replace('}', '')
+            self.df['extracted_orbital_data'] = self.df['extracted_orbital_data'].str.replace('[', '')
+            self.df['extracted_orbital_data'] = self.df['extracted_orbital_data'].str.replace(']', '')
+            self.df['extracted_orbital_data'] = self.df['extracted_orbital_data'].str.replace(',', '')
+            parts2 = self.df['extracted_orbital_data'].str.split(' ')
+            self.df['orbit_uncertainty'] = parts2.str[2].astype(float)
+            self.df['minimum_orbit_intersection'] = parts2.str[5].astype(float)
+            self.df['jupiter_tisserand_invariant'] = parts2.str[8].astype(float)
+            self.df['eccentricity'] = parts2.str[10].astype(float)
+            self.df['semi_major_axis'] = parts2.str[13].astype(float)
+            self.df['inclination'] = parts2.str[16].astype(float)
+            self.df['ascending_node_longitude'] = parts2.str[19].astype(float)
+            # df2t['orbital_period'] = parts2.str[22]
+            self.df['perihelion_distance'] = parts2.str[25].astype(float)
+            self.df['perihelion_argument'] = parts2.str[28].astype(float)
+            self.df['aphelion_distance'] = parts2.str[31].astype(float)
+            self.df['perihelion_time'] = parts2.str[34].astype(float)
+            self.df['mean_anomaly'] = parts2.str[37].astype(float)
+            self.df.drop(['orbital_data', 'extracted_orbital_data'], axis=1, inplace=True)
+
+
+        def clean_df(self):
+            self.df.drop(columns=['id', 'name', 'designation', 'is_sentry_object', 'close_approach_date', 'close_approach_date_full', 'epoch_date_close_approach', 'orbiting_body', 'relative_velocity.kilometers_per_second', 'relative_velocity.miles_per_hour', 'miss_distance.astronomical', 'miss_distance.lunar', 'miss_distance.miles' ], inplace=True)
+            self.df = self.df.rename(columns={'is_potentially_hazardous_asteroid': 'is_hazardous'}) 
+            estimated_diameter_average = (self.df['estimated_diameter_min'].astype(float) + self.df['estimated_diameter_max'].astype(float)) / 2
+            self.df['estimated_diameter_average'] = estimated_diameter_average
+
+        def encoder(self):
+            le = LabelEncoder()
+            self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
+
+        explode_approach(self)
+        clean_diameter(self)
+        clean_orbits(self)
+        clean_df(self)
+        encoder(self)
+        return self.df  
+    
     
     def smote(self):
              
@@ -524,11 +597,12 @@ class supportvm:
 
     def gridsearch(self):
 
-        svm = SVC(kernel='rbf', random_state=42)
+        svm = SVC(random_state=42)
 
 
         param_grid = {
-            'C' : [.001, .01, .1, 1, 10, 2000, 5000, 10000],
+            'kernel' : ['linear', 'rbf'],
+            'C' : [1000, 1500, 2000],
             'gamma' : ['scale', 'auto']
         }
 
@@ -594,7 +668,8 @@ class supportvm2:
 
     def fit(self):
 
-        bestsvm = SVC(C=10000, random_state=42)
+        # bestsvm = SVC(C=10000, random_state=42)
+        bestsvm = SVC(C=2000, gamma='auto', random_state=42)
 
         k = 5 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)

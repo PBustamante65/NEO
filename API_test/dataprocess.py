@@ -43,6 +43,7 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.metrics import r2_score,mean_absolute_error
 from sklearn.metrics import roc_curve, auc
 import warnings
+from sklearn.decomposition import PCA
 
 
 
@@ -423,7 +424,16 @@ class OverallProcessor:
         encoder(self)
         return self.df  
     
+    def clean3(self):
     
+        self.df.drop(columns=['neo_id', 'name', 'orbiting_body'], inplace=True)
+
+        self.df.dropna(inplace=True)
+        le = LabelEncoder()
+        self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
+
+        return self.df
+
     def smote(self):
              
         self.df_test = self.df.copy()
@@ -492,26 +502,93 @@ class scalesplit:
     
     def ttsplit(self):
 
-        def scale(self):
+        df_target = self.df['is_hazardous']
+        df_target_array = df_target.values
+        df_features = self.df.drop(columns=['is_hazardous'])
+        df_features_array = df_features.values
 
-            X = self.df.drop(columns=['is_hazardous'])
+        num_features = len(df_features.columns)
 
-            X_scale = StandardScaler().fit_transform(X)
+        if num_features == 5:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+                ])
+        elif num_features == 11:    
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+            ])
 
-            return X_scale
-        
-        def split(self):
+        elif num_features == 15:       
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
 
-            X = scale(self)
-            y = y = self.df['is_hazardous']
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
 
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-            
-            return X_train, X_test, y_train, y_test
-                
-        X_train, X_test, y_train, y_test = split(self)
+        df_preprocessed = pipeline.fit_transform(self.df)
+        df_preprocessed
+
+        X_train, X_test, y_train, y_test = train_test_split(df_preprocessed, df_target_array, test_size=0.2, random_state=42)
 
         return X_train, X_test, y_train, y_test
+    
+    def sample(self, n):
+
+        X_train, X_test, y_train, y_test = self.ttsplit()
+
+        sss = StratifiedShuffleSplit(n_splits=1, test_size=n, random_state=42)
+
+        for train_index, sample_index in sss.split(X_train, y_train):
+            X_train_sample = X_train[sample_index]
+            y_train_sample = y_train[sample_index]
+
+        return X_train_sample, y_train_sample
+    
+    def sample2(self):
+
+        X_train, X_test, y_train, y_test = self.ttsplit()
+
+        X_train_sample, X_test_sample, y_train_sample, y_test_sample = train_test_split(X_train, y_train, test_size=0.20, random_state=42)
+
+        return X_train_sample, y_train_sample
+
+    def scale(self):
+
+        df_target = self.df['is_hazardous']
+        df_target_array = df_target.values
+        df_features = self.df.drop(columns=['is_hazardous'])
+        df_features_array = df_features.values
+
+        num_features = len(df_features.columns)
+
+        if num_features == 5:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+                ])
+        elif num_features == 11:    
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+            ])
+
+        elif num_features == 15:       
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
+
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
+
+        df_preprocessed = pipeline.fit_transform(self.df)
+        return df_preprocessed
 
 class LogRegression:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -519,32 +596,33 @@ class LogRegression:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-
+        self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='newton-cholesky', warm_start=True)
+        
     def fit(self):
 
-            def gridsearch():
-#                 logReg = LogisticRegression()
+#             def gridsearch():
+# #                 logReg = LogisticRegression()
 
-#                 param_grid = {'solver': ['liblinear', 'newton-cholesky'],
-#               'penalty':['none', 'l2'],
-#               'C':[0.001, 0.01, 0.1, 1, 10, 100],
-#               'n_jobs': [8],
-#               'random_state': [0, 42, 32],
-#               'fit_intercept': [True, False],
-#               'warm_start': [True, False]
-# }
-
-
-#                 grid_search = GridSearchCV(logReg, param_grid, cv=5, verbose=0, n_jobs=-1)
-#                 grid_search.fit(self.X_train, self.y_train)
+# #                 param_grid = {'solver': ['liblinear', 'newton-cholesky'],
+# #               'penalty':['none', 'l2'],
+# #               'C':[0.001, 0.01, 0.1, 1, 10, 100],
+# #               'n_jobs': [8],
+# #               'random_state': [0, 42, 32],
+# #               'fit_intercept': [True, False],
+# #               'warm_start': [True, False]
+# # }
 
 
-                # self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='liblinear', warm_start=True) 
-                self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='newton-cholesky', warm_start=True)
+# #                 grid_search = GridSearchCV(logReg, param_grid, cv=5, verbose=0, n_jobs=-1)
+# #                 grid_search.fit(self.X_train, self.y_train)
 
-                # print(f'Best parameters: {grid_search.best_params_}')
-                # print(f'Best Score: {grid_search.best_score_}')
-                # print(f'Best Estimator: {grid_search.best_estimator_} ')
+
+#                 # self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='liblinear', warm_start=True) 
+
+
+#                 # print(f'Best parameters: {grid_search.best_params_}')
+#                 # print(f'Best Score: {grid_search.best_score_}')
+#                 # print(f'Best Estimator: {grid_search.best_estimator_} ')
 
             def Regression(self):
 
@@ -561,9 +639,9 @@ class LogRegression:
                 accuracy = accuracy_score(self.y_test, prediction)
                 recall = recall_score(prediction, self.y_test)
                 f1 = f1_score(prediction, self.y_test)
-                roc = roc_auc_score(self.y_test, prediction)
+                auc = roc_auc_score(self.y_test, prediction)
 
-                print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The roc score is {roc}\n')
+                print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The ROC AUC score is {auc}\n')
 
                 print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
@@ -584,8 +662,53 @@ class LogRegression:
                 sns.heatmap(cm2, annot=True, cmap='Blues')
 
                 
-            gridsearch()
+            # gridsearch()
             Regression(self)
+    def predict(self, dfp, df):
+
+        self.dfpred = dfp
+        self.dfit = df
+
+        warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+        warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
+
+
+        logreg = self.best_estimator_.fit(self.X_train, self.y_train)
+        pred = self.dfpred.drop(columns=['is_hazardous'], errors='ignore')
+
+        num_features = len(pred.columns) 
+
+        if num_features == 11:
+            preprocess = ColumnTransformer([ 
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+                ])
+
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
+        elif num_features == 15:
+                preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 5:
+                preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+            ])
+        else:
+            print('Invalid number of features')
+            
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
+
+        pipeline.fit(self.dfit)
+        df_preprocessed = pipeline.transform(pred)
+        df_preprocessed
+
+        prediction = logreg.predict(df_preprocessed)
+
+        print(f'The prediction is {prediction}')
+        print('\n')
 
 class supportvm:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -593,43 +716,18 @@ class supportvm:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-
-
-    def gridsearch(self):
-
-        svm = SVC(random_state=42)
-
-
-        param_grid = {
-            'kernel' : ['linear', 'rbf'],
-            'C' : [1000, 1500, 2000],
-            'gamma' : ['scale', 'auto']
-        }
-
-
-        grid_search = GridSearchCV(svm, param_grid, cv=5, n_jobs=-1, verbose=2)
-        print(grid_search)
-
-
-        grid_search.fit(self.X_train, self.y_train)
-
-        print(f"Best parameters: {grid_search.best_params_}")
-        print(f"Best score: {grid_search.best_score_}")
-        print(f"Best estimator: {grid_search.best_estimator_}\n")
-
-        grid_search.best_estimator_svm = grid_search.best_estimator_
-
-        return grid_search.best_estimator_svm
+        self.bestsvm = SVC(C=10000, random_state=42)
 
     def fit(self):
 
-        bestsvm = self.gridsearch()
+        # bestsvm = SVC(C=10000, random_state=42)
+
 
         k = 5 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
         # svm = SVC(C=10000, random_state=42, kernel='rbf', gamma='scale')
-        svm = bestsvm
+        svm = self.bestsvm
         svm.fit(self.X_train, self.y_train)
 
         prediction = svm.predict(self.X_test)
@@ -639,7 +737,7 @@ class supportvm:
         f1 = f1_score(prediction, self.y_test)
         roc = roc_auc_score(self.y_test, prediction)
 
-        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The roc score is {roc}\n')
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The ROC AUC score is {roc}\n')
 
         print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
@@ -658,6 +756,49 @@ class supportvm:
         cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
+
+    def predict(self, dfp, df):
+    
+        self.dfpred = dfp
+        self.dfit = df
+
+        warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+        svmod = self.bestsvm.fit(self.X_train, self.y_train)
+        pred = self.dfpred.drop(columns=['is_hazardous'], errors='ignore')
+
+        num_features = len(pred.columns) 
+
+        if num_features == 11:
+            preprocess = ColumnTransformer([ 
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+                ])
+
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
+        elif num_features == 15:
+                preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 5:
+                preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+            ])
+        else:
+            print('Invalid number of features')
+            
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
+
+        pipeline.fit(self.dfit)
+        df_preprocessed = pipeline.transform(pred)
+        df_preprocessed
+
+        prediction = svmod.predict(df_preprocessed)
+
+        print(f'The prediction is {prediction}')
+        print('\n')
 
 class supportvm2:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -665,17 +806,18 @@ class supportvm2:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
+        self.bestsvm = SVC(C=2000, gamma='auto', random_state=42)
 
     def fit(self):
 
         # bestsvm = SVC(C=10000, random_state=42)
-        bestsvm = SVC(C=2000, gamma='auto', random_state=42)
+
 
         k = 5 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
         # svm = SVC(C=10000, random_state=42, kernel='rbf', gamma='scale')
-        svm = bestsvm
+        svm = self.bestsvm
         svm.fit(self.X_train, self.y_train)
 
         prediction = svm.predict(self.X_test)
@@ -685,7 +827,7 @@ class supportvm2:
         f1 = f1_score(prediction, self.y_test)
         roc = roc_auc_score(self.y_test, prediction)
 
-        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The roc score is {roc}\n')
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The ROC AUC score is {roc}\n')
 
         print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
@@ -705,13 +847,57 @@ class supportvm2:
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
 
+    def predict(self,dfp,df):
+    
+        self.dfpred = dfp
+        self.dfit = df
+
+        warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+        svmod = self.bestsvm.fit(self.X_train, self.y_train)
+        pred = self.dfpred.drop(columns=['is_hazardous'], errors='ignore')
+
+        num_features = len(pred.columns) 
+
+        if num_features == 11:
+            preprocess = ColumnTransformer([ 
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+                ])
+
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
+        elif num_features == 15:
+                preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 5:
+                preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+            ])
+        else:
+            print('Invalid number of features')
+            
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
+
+        pipeline.fit(self.dfit)
+        df_preprocessed = pipeline.transform(pred)
+        df_preprocessed
+
+        prediction = svmod.predict(df_preprocessed)
+
+        print(f'The prediction is {prediction}')
+        print('\n')
+
 class RandomForest:
     def __init__(self, X_train, X_test, y_train, y_test):
         self.X_train = X_train
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-
+        self.randomforest = RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy',random_state=42)
+        
     def fit(self):
 
         warnings.filterwarnings("ignore", message=".*class_weight presets 'balanced' or 'balanced_subsample' are not recommended for warm_start if the fitted data differs from the full dataset.*", module="sklearn.ensemble._forest")
@@ -720,23 +906,22 @@ class RandomForest:
         k = 5 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
-        randomforest = RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy',
-                       random_state=42, warm_start=True)
-        randomforest.fit(self.X_train, self.y_train)
 
-        prediction = randomforest.predict(self.X_test)
+        self.randomforest.fit(self.X_train, self.y_train)
+
+        prediction = self.randomforest.predict(self.X_test)
 
         accuracy = accuracy_score(self.y_test, prediction)
         recall = recall_score(prediction, self.y_test)
         f1 = f1_score(prediction, self.y_test)
         roc = roc_auc_score(self.y_test, prediction)
 
-        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The roc score is {roc}\n')
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The ROC AUC score is {roc}\n')
 
         print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
 
-        r2 =  cross_val_score(randomforest,self.X_train,self.y_train,cv=kf,scoring='r2')
+        r2 =  cross_val_score(self.randomforest,self.X_train,self.y_train,cv=kf,scoring='r2')
         print(f'Cross validation score: {r2}\n')
 
         np.mean(r2)
@@ -752,5 +937,79 @@ class RandomForest:
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
 
-        
-    
+    def predict(self,dfp,df):
+
+
+        self.dfpred = dfp
+        self.dfit = df
+
+        warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+        warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
+
+
+        randomfmod = self.randomforest.fit(self.X_train, self.y_train)
+        pred = self.dfpred.drop(columns=['is_hazardous'], errors='ignore')
+
+        num_features = len(pred.columns) 
+
+        if num_features == 11:
+            preprocess = ColumnTransformer([ 
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+                ])
+
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
+        elif num_features == 15:
+                preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 5:
+                preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+            ])
+        else:
+            print('Invalid number of features')
+            
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
+
+        pipeline.fit(self.dfit)
+        df_preprocessed = pipeline.transform(pred)
+        df_preprocessed
+
+        prediction = randomfmod.predict(df_preprocessed)
+
+        print(f'The prediction is {prediction}')
+        print('\n')
+
+class PCAFeatures:
+    def __init__(self, X_train, y_train, df):
+
+        self.X_train = X_train
+        self.y_train = y_train
+        self.df = df
+
+    def PCAfeatures(self):
+
+        ydf = pd.DataFrame(self.y_train, columns= ['is_hazardous'])
+        fd1 = self.df.drop(columns=['is_hazardous'])
+        fd2 = pd.DataFrame(self.X_train, columns=fd1.columns)
+
+
+        pca = PCA(n_components= 0.9, random_state=42)
+        df_reduced = pca.fit_transform(fd2)
+
+        print("Número de componentes:", pca.n_components_)
+
+        feature_names = fd2.columns
+        components = pca.components_
+        df_components = pd.DataFrame(components, columns=feature_names, index=[f'PC{i+1}' for i in range(components.shape[0])])
+        # print(df_components)
+
+        df_pca = pd.DataFrame(df_reduced, columns=['PC1', 'PC2', 'PC3', 'PC4', 'PC5', 'PC6', 'PC7', 'PC8', 'PC9', 'PC10'])
+        df_pca['class'] = ydf
+        # print(df_pca.head())
+
+        return df_pca

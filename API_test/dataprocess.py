@@ -44,6 +44,13 @@ from sklearn.metrics import r2_score,mean_absolute_error
 from sklearn.metrics import roc_curve, auc
 import warnings
 from sklearn.decomposition import PCA
+from sklearn.ensemble import BaggingClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+import xgboost as xgb
+from ngboost import NGBClassifier
+from ngboost.distns import Normal
+from ngboost.scores import MLE
 
 
 
@@ -1013,3 +1020,177 @@ class PCAFeatures:
         # print(df_pca.head())
 
         return df_pca
+
+class xgbClassifier:
+    def __init__(self, X_train, X_test, y_train, y_test):
+
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+        self.bestxgb = xgb.XGBClassifier(max_depth=3, n_estimators=200, learning_rate=0.01, random_state=42, gamma=0.1, alpha=0.1, min_child_weight=10)
+
+    def fit(self):
+
+        k = 5 
+        kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+
+
+        self.bestxgb.fit(self.X_train, self.y_train)
+
+        prediction = self.bestxgb.predict(self.X_test)
+
+        accuracy = accuracy_score(self.y_test, prediction)
+        recall = recall_score(prediction, self.y_test)
+        f1 = f1_score(prediction, self.y_test)
+        roc = roc_auc_score(self.y_test, prediction)
+
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The ROC AUC score is {roc}\n')
+
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
+
+
+        r2 =  cross_val_score(self.bestxgb,self.X_train,self.y_train,cv=kf,scoring='r2')
+        print(f'Cross validation score: {r2}\n')
+
+        np.mean(r2)
+
+        print(f'Mean cross validation score: {np.mean(r2)}\n')
+
+        cm = confusion_matrix(self.y_test, prediction)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap='Blues')
+        plt.show()
+
+        cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
+
+        sns.heatmap(cm2, annot=True, cmap='Blues')
+
+class GradientBoost:
+    def __init__(self, X_train, X_test, y_train, y_test):
+
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+        self.bestgb = GradientBoostingClassifier(n_estimators=200,learning_rate=0.1,random_state=42,max_depth=3)
+
+    def fit(self):
+
+        k = 5 
+        kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+
+        self.bestgb.fit(self.X_train, self.y_train)
+
+        prediction = self.bestgb.predict(self.X_test)
+
+        accuracy = accuracy_score(self.y_test, prediction)
+        recall = recall_score(prediction, self.y_test)
+        f1 = f1_score(prediction, self.y_test)
+        roc = roc_auc_score(self.y_test, prediction)
+
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The ROC AUC score is {roc}\n')
+
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
+
+        r2 =  cross_val_score(self.bestgb,self.X_train,self.y_train,cv=kf,scoring='r2')
+        print(f'Cross validation score: {r2}\n')
+
+        np.mean(r2)
+
+        print(f'Mean cross validation score: {np.mean(r2)}\n')
+
+        cm = confusion_matrix(self.y_test, prediction)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap='Blues')
+        plt.show()
+
+        cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
+
+        sns.heatmap(cm2, annot=True, cmap='Blues')
+
+class AdaBoost:
+    def __init__(self, X_train, X_test, y_train, y_test):
+
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+        self.bestada = AdaBoostClassifier( RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy', random_state=42), n_estimators=100, random_state=42, learning_rate=0.1)
+
+    def fit(self):
+
+        k = 5 
+        kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+
+        self.bestada.fit(self.X_train, self.y_train)
+
+        prediction = self.bestada.predict(self.X_test)
+
+        accuracy = accuracy_score(self.y_test, prediction)
+        recall = recall_score(prediction, self.y_test)
+        f1 = f1_score(prediction, self.y_test)
+        roc = roc_auc_score(self.y_test, prediction)
+
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The ROC AUC score is {roc}\n')
+
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
+
+        r2 =  cross_val_score(self.bestada,self.X_train,self.y_train,cv=kf,scoring='r2')
+        print(f'Cross validation score: {r2}\n')
+
+        np.mean(r2)
+
+        print(f'Mean cross validation score: {np.mean(r2)}\n')
+
+        cm = confusion_matrix(self.y_test, prediction)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap='Blues')
+        plt.show()
+
+        cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
+
+        sns.heatmap(cm2, annot=True, cmap='Blues')
+
+class ngboost:
+    def __init__(self, X_train, X_test, y_train, y_test):
+
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+        self.bestngb = NGBClassifier(n_estimators=100, random_state=42)
+
+    def fit(self):
+
+        k = 5 
+        kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+
+        self.bestngb.fit(self.X_train, self.y_train)
+
+        prediction = self.bestngb.predict(self.X_test)
+
+        accuracy = accuracy_score(self.y_test, prediction)
+        recall = recall_score(prediction, self.y_test)
+        f1 = f1_score(prediction, self.y_test)
+        roc = roc_auc_score(self.y_test, prediction)
+
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The ROC AUC score is {roc}\n')
+
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
+
+        r2 =  cross_val_score(self.bestngb,self.X_train,self.y_train,cv=kf,scoring='r2')
+        print(f'Cross validation score: {r2}\n')
+
+        np.mean(r2)
+
+        print(f'Mean cross validation score: {np.mean(r2)}\n')
+
+        cm = confusion_matrix(self.y_test, prediction)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap='Blues')
+        plt.show()
+
+        cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
+
+        sns.heatmap(cm2, annot=True, cmap='Blues')

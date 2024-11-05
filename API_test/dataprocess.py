@@ -51,6 +51,7 @@ import xgboost as xgb
 from ngboost import NGBClassifier
 from ngboost.distns import Normal
 from ngboost.scores import MLE
+from sklearn.neural_network import MLPClassifier
 
 
 
@@ -1180,6 +1181,49 @@ class ngboost:
         print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
         r2 =  cross_val_score(self.bestngb,self.X_train,self.y_train,cv=kf,scoring='r2')
+        print(f'Cross validation score: {r2}\n')
+
+        np.mean(r2)
+
+        print(f'Mean cross validation score: {np.mean(r2)}\n')
+
+        cm = confusion_matrix(self.y_test, prediction)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap='Blues')
+        plt.show()
+
+        cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
+
+        sns.heatmap(cm2, annot=True, cmap='Blues')
+
+class ANN:
+    def __init__(self, X_train, X_test, y_train, y_test):
+
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+        self.bestmlp = MLPClassifier(hidden_layer_sizes=(50,), max_iter=1000, random_state=42)
+
+    def fit(self):
+
+        k = 5 
+        kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+
+        self.bestmlp.fit(self.X_train, self.y_train)
+
+        prediction = self.bestmlp.predict(self.X_test)
+
+        accuracy = accuracy_score(self.y_test, prediction)
+        recall = recall_score(prediction, self.y_test)
+        f1 = f1_score(prediction, self.y_test)
+        roc = roc_auc_score(self.y_test, prediction)
+
+        print (f'The accuracy score is {accuracy}\n The recall score is {recall}\n The f1 score is {f1}\n The ROC AUC score is {roc}\n')
+
+        print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
+
+        r2 =  cross_val_score(self.bestmlp,self.X_train,self.y_train,cv=kf,scoring='r2')
         print(f'Cross validation score: {r2}\n')
 
         np.mean(r2)

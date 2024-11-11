@@ -609,28 +609,28 @@ class LogRegression:
     def fit(self):
 
 #             def gridsearch():
-# #                 logReg = LogisticRegression()
+#                 logReg = LogisticRegression()
 
-# #                 param_grid = {'solver': ['liblinear', 'newton-cholesky'],
-# #               'penalty':['none', 'l2'],
-# #               'C':[0.001, 0.01, 0.1, 1, 10, 100],
-# #               'n_jobs': [8],
-# #               'random_state': [0, 42, 32],
-# #               'fit_intercept': [True, False],
-# #               'warm_start': [True, False]
-# # }
-
-
-# #                 grid_search = GridSearchCV(logReg, param_grid, cv=5, verbose=0, n_jobs=-1)
-# #                 grid_search.fit(self.X_train, self.y_train)
+#                 param_grid = {'solver': ['liblinear', 'newton-cholesky'],
+#               'penalty':['none', 'l2'],
+#               'C':[0.001, 0.01, 0.1, 1, 10, 100],
+#               'n_jobs': [8],
+#               'random_state': [0, 42, 32],
+#               'fit_intercept': [True, False],
+#               'warm_start': [True, False]
+# }
 
 
-#                 # self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='liblinear', warm_start=True) 
+#                 grid_search = GridSearchCV(logReg, param_grid, cv=5, verbose=0, n_jobs=-1)
+#                 grid_search.fit(self.X_train, self.y_train)
 
 
-#                 # print(f'Best parameters: {grid_search.best_params_}')
-#                 # print(f'Best Score: {grid_search.best_score_}')
-#                 # print(f'Best Estimator: {grid_search.best_estimator_} ')
+#                 self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='liblinear', warm_start=True) 
+
+
+#                 print(f'Best parameters: {grid_search.best_params_}')
+#                 print(f'Best Score: {grid_search.best_score_}')
+#                 print(f'Best Estimator: {grid_search.best_estimator_} ')
 
             def Regression(self):
 

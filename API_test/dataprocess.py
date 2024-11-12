@@ -672,51 +672,20 @@ class LogRegression:
                 
             # gridsearch()
             Regression(self)
-    def predict(self, dfp, df):
+    def predict(self, dfp):
 
         self.dfpred = dfp
-        self.dfit = df
 
         warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
         warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
 
-
         logreg = self.best_estimator_.fit(self.X_train, self.y_train)
-        pred = self.dfpred.drop(columns=['is_hazardous'], errors='ignore')
 
-        num_features = len(pred.columns) 
+        prediction = logreg.predict(self.dfpred)
 
-        if num_features == 11:
-            preprocess = ColumnTransformer([ 
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
-                ])
-
-        elif num_features == 18:
-            preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
-            ])
-        elif num_features == 15:
-                preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
-            ])
-        elif num_features == 5:
-                preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
-            ])
-        else:
-            print('Invalid number of features')
-            
-        pipeline = Pipeline([
-            ('preprocess', preprocess)])
-
-        pipeline.fit(self.dfit)
-        df_preprocessed = pipeline.transform(pred)
-        df_preprocessed
-
-        prediction = logreg.predict(df_preprocessed)
-
-        print(f'The prediction is {prediction}')
-        print('\n')
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class supportvm:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -765,48 +734,21 @@ class supportvm:
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
 
-    def predict(self, dfp, df):
+    def predict(self, dfp):
     
+
         self.dfpred = dfp
-        self.dfit = df
 
         warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
-        svmod = self.bestsvm.fit(self.X_train, self.y_train)
-        pred = self.dfpred.drop(columns=['is_hazardous'], errors='ignore')
+        warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
 
-        num_features = len(pred.columns) 
+        svm = self.bestsvm.fit(self.X_train, self.y_train)
 
-        if num_features == 11:
-            preprocess = ColumnTransformer([ 
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
-                ])
+        prediction = svm.predict(self.dfpred)
 
-        elif num_features == 18:
-            preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
-            ])
-        elif num_features == 15:
-                preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
-            ])
-        elif num_features == 5:
-                preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
-            ])
-        else:
-            print('Invalid number of features')
-            
-        pipeline = Pipeline([
-            ('preprocess', preprocess)])
-
-        pipeline.fit(self.dfit)
-        df_preprocessed = pipeline.transform(pred)
-        df_preprocessed
-
-        prediction = svmod.predict(df_preprocessed)
-
-        print(f'The prediction is {prediction}')
-        print('\n')
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class supportvm2:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -855,48 +797,20 @@ class supportvm2:
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
 
-    def predict(self,dfp,df):
+    def predict(self,dfp):
     
         self.dfpred = dfp
-        self.dfit = df
 
         warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
-        svmod = self.bestsvm.fit(self.X_train, self.y_train)
-        pred = self.dfpred.drop(columns=['is_hazardous'], errors='ignore')
+        warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
 
-        num_features = len(pred.columns) 
+        svm = self.bestsvm.fit(self.X_train, self.y_train)
 
-        if num_features == 11:
-            preprocess = ColumnTransformer([ 
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
-                ])
+        prediction = svm.predict(self.dfpred)
 
-        elif num_features == 18:
-            preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
-            ])
-        elif num_features == 15:
-                preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
-            ])
-        elif num_features == 5:
-                preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
-            ])
-        else:
-            print('Invalid number of features')
-            
-        pipeline = Pipeline([
-            ('preprocess', preprocess)])
-
-        pipeline.fit(self.dfit)
-        df_preprocessed = pipeline.transform(pred)
-        df_preprocessed
-
-        prediction = svmod.predict(df_preprocessed)
-
-        print(f'The prediction is {prediction}')
-        print('\n')
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class RandomForest:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -945,52 +859,20 @@ class RandomForest:
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
 
-    def predict(self,dfp,df):
-
+    def predict(self,dfp):
 
         self.dfpred = dfp
-        self.dfit = df
 
         warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
         warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
 
+        rf = self.randomforest.fit(self.X_train, self.y_train)
 
-        randomfmod = self.randomforest.fit(self.X_train, self.y_train)
-        pred = self.dfpred.drop(columns=['is_hazardous'], errors='ignore')
+        prediction = rf.predict(self.dfpred)
 
-        num_features = len(pred.columns) 
-
-        if num_features == 11:
-            preprocess = ColumnTransformer([ 
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
-                ])
-
-        elif num_features == 18:
-            preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
-            ])
-        elif num_features == 15:
-                preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
-            ])
-        elif num_features == 5:
-                preprocess = ColumnTransformer([
-                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
-            ])
-        else:
-            print('Invalid number of features')
-            
-        pipeline = Pipeline([
-            ('preprocess', preprocess)])
-
-        pipeline.fit(self.dfit)
-        df_preprocessed = pipeline.transform(pred)
-        df_preprocessed
-
-        prediction = randomfmod.predict(df_preprocessed)
-
-        print(f'The prediction is {prediction}')
-        print('\n')
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class PCAFeatures:
     def __init__(self, X_train, y_train, df):
@@ -1033,6 +915,7 @@ class xgbClassifier:
 
     def fit(self):
 
+
         k = 5 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
@@ -1066,6 +949,22 @@ class xgbClassifier:
         cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
+
+    def predict(self,dfp):
+
+        self.dfpred = dfp
+
+        warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+        warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
+
+        xgb = self.bestxgb.fit(self.X_train, self.y_train)
+
+        prediction = xgb.predict(self.dfpred)
+
+
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class GradientBoost:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -1110,6 +1009,22 @@ class GradientBoost:
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
 
+    def predict(self,dfp):
+
+        self.dfpred = dfp
+
+        warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+        warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
+
+        gb = self.bestgb.fit(self.X_train, self.y_train)
+
+        prediction = gb.predict(self.dfpred)
+
+
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
+
 class AdaBoost:
     def __init__(self, X_train, X_test, y_train, y_test):
 
@@ -1126,7 +1041,7 @@ class AdaBoost:
 
         self.bestada.fit(self.X_train, self.y_train)
 
-        prediction = self.bestada.predict(self.X_test)
+        prediction = self.bestada.predict(self.X_test) 
 
         accuracy = accuracy_score(self.y_test, prediction)
         recall = recall_score(prediction, self.y_test)
@@ -1152,6 +1067,23 @@ class AdaBoost:
         cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
+
+    def predict(self,dfp):
+
+        self.dfpred = dfp
+
+        warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+        warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
+
+        ada = self.bestada.fit(self.X_train, self.y_train)
+
+        prediction = ada.predict(self.dfpred)
+
+
+        return prediction
+
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class ngboost:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -1196,6 +1128,22 @@ class ngboost:
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
 
+    def predict(self,dfp):
+
+        self.dfpred = dfp
+
+        warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+        warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
+
+        ngb = self.bestngb.fit(self.X_train, self.y_train)
+
+        prediction = ngb.predict(self.dfpred)
+
+
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
+
 class ANN:
     def __init__(self, X_train, X_test, y_train, y_test):
 
@@ -1238,3 +1186,20 @@ class ANN:
         cm2 = cm / cm.sum(axis=1)[:, np.newaxis]
 
         sns.heatmap(cm2, annot=True, cmap='Blues')
+
+    def predict(self,dfp):
+
+        self.dfpred = dfp
+
+        warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+        warnings.filterwarnings("ignore", message="class_weight presets 'balanced' or 'balanced_subsample'.* ", module="sklearn.ensemble._forest")
+
+        mlp = self.bestmlp.fit(self.X_train, self.y_train)
+
+        prediction = mlp.predict(self.dfpred)
+
+
+        return prediction
+
+        # print(f'The prediction is {prediction}')
+        # print('\n')

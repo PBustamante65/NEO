@@ -683,8 +683,9 @@ class LogRegression:
 
         prediction = logreg.predict(self.dfpred)
 
-        print(f'The prediction is {prediction}')
-        print('\n')
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class supportvm:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -745,8 +746,9 @@ class supportvm:
 
         prediction = svm.predict(self.dfpred)
 
-        print(f'The prediction is {prediction}')
-        print('\n')
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class supportvm2:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -806,8 +808,9 @@ class supportvm2:
 
         prediction = svm.predict(self.dfpred)
 
-        print(f'The prediction is {prediction}')
-        print('\n')
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class RandomForest:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -867,8 +870,9 @@ class RandomForest:
 
         prediction = rf.predict(self.dfpred)
 
-        print(f'The prediction is {prediction}')
-        print('\n')
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class PCAFeatures:
     def __init__(self, X_train, y_train, df):
@@ -957,8 +961,10 @@ class xgbClassifier:
 
         prediction = xgb.predict(self.dfpred)
 
-        print(f'The prediction is {prediction}')
-        print('\n')
+
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class GradientBoost:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -1014,8 +1020,10 @@ class GradientBoost:
 
         prediction = gb.predict(self.dfpred)
 
-        print(f'The prediction is {prediction}')
-        print('\n')
+
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class AdaBoost:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -1033,7 +1041,7 @@ class AdaBoost:
 
         self.bestada.fit(self.X_train, self.y_train)
 
-        prediction = self.bestada.predict(self.X_test)
+        prediction = self.bestada.predict(self.X_test) 
 
         accuracy = accuracy_score(self.y_test, prediction)
         recall = recall_score(prediction, self.y_test)
@@ -1071,8 +1079,11 @@ class AdaBoost:
 
         prediction = ada.predict(self.dfpred)
 
-        print(f'The prediction is {prediction}')
-        print('\n')
+
+        return prediction
+
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class ngboost:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -1128,8 +1139,10 @@ class ngboost:
 
         prediction = ngb.predict(self.dfpred)
 
-        print(f'The prediction is {prediction}')
-        print('\n')
+
+        return prediction
+        # print(f'The prediction is {prediction}')
+        # print('\n')
 
 class ANN:
     def __init__(self, X_train, X_test, y_train, y_test):
@@ -1185,5 +1198,8 @@ class ANN:
 
         prediction = mlp.predict(self.dfpred)
 
-        print(f'The prediction is {prediction}')
-        print('\n')
+
+        return prediction
+
+        # print(f'The prediction is {prediction}')
+        # print('\n')

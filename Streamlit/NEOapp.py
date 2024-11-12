@@ -184,9 +184,9 @@ if option == '5':
             predictionlog  = model5.predict(pipelined_data)
             
             if predictionlog[0] == 1:
-                logprediction_text = 'The predicted hazard for ' + name + ' using a logistic regression model with an 85% accuracy is HIGH'
+                logprediction_text = 'The predicted hazard for ' + name + ' using an Adaboost model with an 89% accuracy is HIGH'
             else:
-                logprediction_text = 'The predicted hazard for ' + name + ' using a logistic regression model with an 85% accuracy is LOW'
+                logprediction_text = 'The predicted hazard for ' + name + ' using an Adaboost model with an 89% accuracy is LOW'
 
             col3, col4, col8 = st.columns(3)
 
@@ -195,10 +195,162 @@ if option == '5':
 
 elif option == '11':
 
-    print('11')
+    col1, col2 = st.columns(2)
+
+    with col1:
+        name = st.text_input('Enter a name')
+        absolute_magnitude_h = st.number_input('Enter a absolute magnitude of its intrinsic luminosity(9 to 34)', min_value= 9.0, max_value=34.0, value=10.0, format= '%.3f')
+        estimated_diameter_min = st.number_input('Enter a minimum estimated diameter in kilometers (0.001 to 40)', min_value=0.001, max_value=40.0, value=5.0, format= '%.3f')
+        minimum_orbit_intersection = st.number_input('Enter a minimum orbit intersection in kilometers (1.52262e-07 to 0.568197)', min_value=0.0000000001, max_value=1.0, value=0.1, format= '%.3f')
+        inclination = st.number_input('Enter its inclination in degrees (0 to 180)', min_value=0.0, max_value=180.0, value=0.0, format= '%.3f')
+        aphelion_distance = st.number_input('Enter its aphelion distance in kilometers (0.7 to 680)', min_value=0.7, max_value=680.0, value=5.0, format= '%.3f')
+
+    with col2:
+        estimated_diameter_max = st.number_input('Enter a maximum estimated diameter in kilometers (0.001 to 90)', min_value=0.001, max_value=90.0, value=5.0, format= '%.3f')
+        relative_velocity = st.number_input('Enter its velocity relative to Earth in km/h (200 to 300,000)', min_value=200.0, max_value=300000.0, value=500.0, format= '%.3f')
+        miss_distance = st.number_input('Enter a miss distance relative to Earth in kilometers (6000 to 75,000,000)', min_value=6000.0, max_value=75000000.0, value=10000.0, format= '%.3f')
+        eccentricity = st.number_input('Enter its eccentricity (0.003 to 0.9999)', min_value=0.003, max_value=0.9999, value=0.1, format= '%.3f')
+        perihilion_distance = st.number_input('Enter a perihilion distance in kilometers (0.05 to 1.3)', min_value=0.05, max_value=1.3, value=0.1, format= '%.3f')
+        estimated_diameter_average = st.number_input('Enter an estimated diameter average in kilometers (0 to 70)', min_value=0.0000001, max_value=70.0, value=5.0, format= '%.3f')
+
+    col5, col6, col7 = st.columns([1,6,1])
+
+    if st.button('Predict'):
+        with col6:
+            input_data = pd.DataFrame(
+            
+                {'absolute_magnitude_h': [absolute_magnitude_h], 'estimated_diameter_min': [estimated_diameter_min],
+                'estimated_diameter_max': [estimated_diameter_max], 'relative_velocity.kilometers_per_hour': [relative_velocity], 'miss_distance.kilometers': [miss_distance], 'minimum_orbit_intersection': [minimum_orbit_intersection], 'inclination': [inclination], 'aphelion_distance': [aphelion_distance], 'eccentricity': [eccentricity], 'perihilion_distance': [perihilion_distance], 'estimated_diameter_average': [estimated_diameter_average]},
+                index=[0]
+            )
+
+            st.write(input_data)
+
+            pipelined_data = pipeline11.transform(input_data)
+
+            predictionlog  = model11.predict(pipelined_data)
+            
+            if predictionlog[0] == 1:
+                logprediction_text = 'The predicted hazard for ' + name + ' using an Adaboost model with an 99.97% accuracy is HIGH'
+            else:
+                logprediction_text = 'The predicted hazard for ' + name + ' using an Adaboost model with an 99.97% accuracy is LOW'
+
+            col3, col4, col8 = st.columns(3)
+
+            with col4:
+                st.markdown('<p style="text-align: center;"> '+ str(logprediction_text) , unsafe_allow_html=True)
 
 elif option == '15':
-    print('15')
+
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        name = st.text_input('Enter a name')
+        absolute_magnitude_h = st.number_input('Enter a absolute magnitude of its intrinsic luminosity(9 to 34)', min_value= 9.0, max_value=34.0, value=10.0, format= '%.3f')
+        minimum_orbit_intersection = st.number_input('Enter a minimum orbit intersection in kilometers (1.52262e-07 to 0.568197)', min_value=0.0000000001, max_value=1.0, value=0.1, format= '%.3f')
+        inclination = st.number_input('Enter its inclination in degrees (0 to 180)', min_value=0.0, max_value=180.0, value=0.0, format= '%.3f')
+        aphelion_distance = st.number_input('Enter its aphelion distance in kilometers (0.7 to 680)', min_value=0.7, max_value=680.0, value=5.0, format= '%.3f')
+        orbit_uncertainty = st.number_input('Enter its orbit uncertainty (0 to 10)', min_value=0.0, max_value=10.0, value=0.0, format= '%.3f')
+        semi_major_axis = st.number_input('Enter its semi-major axis (0.5 to 360)', min_value=0.5, max_value=360.0, value=3.4, format= '%.3f')
+        perihelion_argument = st.number_input('Enter its perihelion argument in degrees (0 to 360)', min_value=0.0, max_value=360.0, value=0.0, format= '%.3f')
+        mean_anomaly = st.number_input('Enter its mean anomaly in degrees (0 to 360)', min_value=0.0, max_value=360.0, value=0.0, format= '%.3f')
+
+    with col2:
+        relative_velocity = st.number_input('Enter its velocity relative to Earth in km/h (200 to 300,000)', min_value=200.0, max_value=300000.0, value=500.0, format= '%.3f')
+        miss_distance = st.number_input('Enter a miss distance relative to Earth in kilometers (6000 to 75,000,000)', min_value=6000.0, max_value=75000000.0, value=10000.0, format= '%.3f')
+        eccentricity = st.number_input('Enter its eccentricity (0.003 to 0.9999)', min_value=0.003, max_value=0.9999, value=0.1, format= '%.3f')
+        perihelion_distance = st.number_input('Enter a perihilion distance in kilometers (0.05 to 1.3)', min_value=0.05, max_value=1.3, value=0.1, format= '%.3f')
+        jupiter_tisserand_invariant = st.number_input('Enter its jupiter tisserand invariant (-1 to 10)', min_value= -1.0, max_value=10.0, value=0.0, format= '%.3f')
+        ascending_node_longitude = st.number_input('Enter its ascending node longitude in degrees (0 to 360)', min_value=0.0, max_value=360.0, value=0.0, format= '%.3f')
+        perihelion_time = st.number_input('Enter a perihelion time in days (2400000 to 2500000)', min_value=2400000.0, max_value=2500000.0, value=2400000.0, format= '%.3f')
+
+    col5, col6, col7 = st.columns([1,6,1])
+
+    if st.button('Predict'):
+        with col6:
+            input_data = pd.DataFrame(
+            
+                {'absolute_magnitude_h': [absolute_magnitude_h], 'relative_velocity.kilometers_per_hour': [relative_velocity], 'miss_distance.kilometers': [miss_distance], 'minimum_orbit_intersection': [minimum_orbit_intersection], 
+                 'inclination': [inclination], 'aphelion_distance': [aphelion_distance], 'eccentricity': [eccentricity], 'perihelion_distance': [perihelion_distance], 'semi_major_axis': [semi_major_axis], 
+                 'perihelion_argument': [perihelion_argument], 'mean_anomaly': [mean_anomaly], 'orbit_uncertainty': [orbit_uncertainty], 'perihelion_time': [perihelion_time], 'jupiter_tisserand_invariant': [jupiter_tisserand_invariant], 
+                 'ascending_node_longitude': [ascending_node_longitude]},
+                index=[0]
+            )
+
+            st.write(input_data)
+
+            pipelined_data = pipeline15.transform(input_data)
+
+            predictionlog  = model15.predict(pipelined_data)
+            
+            if predictionlog[0] == 1:
+                logprediction_text = 'The predicted hazard for ' + name + ' using an Adaboost model with an 99.96% accuracy is HIGH'
+            else:
+                logprediction_text = 'The predicted hazard for ' + name + ' using an Adaboost model with an 99.96% accuracy is LOW'
+
+            col3, col4, col8 = st.columns(3)
+
+            with col4:
+                st.markdown('<p style="text-align: center;"> '+ str(logprediction_text) , unsafe_allow_html=True)
+
+
 
 elif option == '18':
-    print('18')
+
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        name = st.text_input('Enter a name')
+        absolute_magnitude_h = st.number_input('Enter a absolute magnitude of its intrinsic luminosity(9 to 34)', min_value= 9.0, max_value=34.0, value=10.0, format= '%.3f')
+        estimated_diameter_min = st.number_input('Enter a minimum estimated diameter in kilometers (0.001 to 40)', min_value=0.001, max_value=40.0, value=5.0, format= '%.3f')
+        minimum_orbit_intersection = st.number_input('Enter a minimum orbit intersection in kilometers (1.52262e-07 to 0.568197)', min_value=0.0000000001, max_value=1.0, value=0.1, format= '%.3f')
+        inclination = st.number_input('Enter its inclination in degrees (0 to 180)', min_value=0.0, max_value=180.0, value=0.0, format= '%.3f')
+        aphelion_distance = st.number_input('Enter its aphelion distance in kilometers (0.7 to 680)', min_value=0.7, max_value=680.0, value=5.0, format= '%.3f')
+        orbit_uncertainty = st.number_input('Enter its orbit uncertainty (0 to 10)', min_value=0.0, max_value=10.0, value=0.0, format= '%.3f')
+        semi_major_axis = st.number_input('Enter its semi-major axis (0.5 to 360)', min_value=0.5, max_value=360.0, value=3.4, format= '%.3f')
+        perihelion_argument = st.number_input('Enter its perihelion argument in degrees (0 to 360)', min_value=0.0, max_value=360.0, value=0.0, format= '%.3f')
+        mean_anomaly = st.number_input('Enter its mean anomaly in degrees (0 to 360)', min_value=0.0, max_value=360.0, value=0.0, format= '%.3f')
+
+    with col2:
+        estimated_diameter_max = st.number_input('Enter a maximum estimated diameter in kilometers (0.001 to 90)', min_value=0.001, max_value=90.0, value=5.0, format= '%.3f')
+        relative_velocity = st.number_input('Enter its velocity relative to Earth in km/h (200 to 300,000)', min_value=200.0, max_value=300000.0, value=500.0, format= '%.3f')
+        miss_distance = st.number_input('Enter a miss distance relative to Earth in kilometers (6000 to 75,000,000)', min_value=6000.0, max_value=75000000.0, value=10000.0, format= '%.3f')
+        eccentricity = st.number_input('Enter its eccentricity (0.003 to 0.9999)', min_value=0.003, max_value=0.9999, value=0.1, format= '%.3f')
+        perihelion_distance = st.number_input('Enter a perihilion distance in kilometers (0.05 to 1.3)', min_value=0.05, max_value=1.3, value=0.1, format= '%.3f')
+        estimated_diameter_average = st.number_input('Enter an estimated diameter average in kilometers (0 to 70)', min_value=0.0000001, max_value=70.0, value=5.0, format= '%.3f')
+        jupiter_tisserand_invariant = st.number_input('Enter its jupiter tisserand invariant (-1 to 10)', min_value= -1.0, max_value=10.0, value=0.0, format= '%.3f')
+        ascending_node_longitude = st.number_input('Enter its ascending node longitude in degrees (0 to 360)', min_value=0.0, max_value=360.0, value=0.0, format= '%.3f')
+        perihelion_time = st.number_input('Enter a perihelion time in days (2400000 to 2500000)', min_value=2400000.0, max_value=2500000.0, value=2400000.0, format= '%.3f')
+
+    col5, col6, col7 = st.columns([1,6,1])
+
+    if st.button('Predict'):
+        with col6:
+            input_data = pd.DataFrame(
+            
+                {'absolute_magnitude_h': [absolute_magnitude_h], 'estimated_diameter_min': [estimated_diameter_min],
+                'estimated_diameter_max': [estimated_diameter_max], 'relative_velocity.kilometers_per_hour': [relative_velocity], 'miss_distance.kilometers': [miss_distance], 
+                'minimum_orbit_intersection': [minimum_orbit_intersection], 'inclination': [inclination], 'aphelion_distance': [aphelion_distance], 'eccentricity': [eccentricity], 
+                'perihelion_distance': [perihelion_distance], 'estimated_diameter_average': [estimated_diameter_average], 'mean_anomaly': [mean_anomaly], 'orbit_uncertainty': [orbit_uncertainty], 
+                'perihelion_time': [perihelion_time], 'jupiter_tisserand_invariant': [jupiter_tisserand_invariant], 
+                'ascending_node_longitude': [ascending_node_longitude], 'semi_major_axis': [semi_major_axis], 'perihelion_argument': [perihelion_argument]},
+                index=[0]
+            )
+
+            st.write(input_data)
+
+            pipelined_data = pipeline18.transform(input_data)
+
+            predictionlog  = model18.predict(pipelined_data)
+            
+            if predictionlog[0] == 1:
+                logprediction_text = 'The predicted hazard for ' + name + ' using an Adaboost model with an 99.97% accuracy is HIGH'
+            else:
+                logprediction_text = 'The predicted hazard for ' + name + ' using an Adaboost model with an 99.97% accuracy is LOW'
+
+            col3, col4, col8 = st.columns(3)
+
+            with col4:
+                st.markdown('<p style="text-align: center;"> '+ str(logprediction_text) , unsafe_allow_html=True)

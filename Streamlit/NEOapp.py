@@ -13,7 +13,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
 from joblib import dump, load
-sys.path.append('/Volumes/Maestria/GitHub/NEO/NEO/Exports/API')
+sys.path.append('Exports/API')
 
 import dataprocess as dp
 
@@ -48,7 +48,7 @@ import dataprocess as dp
 #     print("Failed to load support vector machine model:", e)
 
 
-pipeline5_path = '/Volumes/Maestria/GitHub/NEO/NEO/Exports/API/pipeline5.sav'
+pipeline5_path = 'Exports/API/pipeline5.sav'
 
 with open(pipeline5_path, 'rb') as file1:
     print(file1.read(100))  
@@ -58,7 +58,7 @@ try:
 except Exception as e:
     print("Failed to load pipeline 5:", e)
 
-pipeline11_path = '/Volumes/Maestria/GitHub/NEO/NEO/Exports/API/pipeline11.sav'
+pipeline11_path = 'Exports/API/pipeline11.sav'
 
 with open(pipeline11_path, 'rb') as file1:
     print(file1.read(100))  
@@ -68,7 +68,7 @@ try:
 except Exception as e:
     print("Failed to load pipeline 11:", e)
 
-pipeline15_path = '/Volumes/Maestria/GitHub/NEO/NEO/Exports/API/pipeline15.sav'
+pipeline15_path = 'Exports/API/pipeline15.sav'
 
 with open(pipeline15_path, 'rb') as file1:
     print(file1.read(100))  
@@ -78,7 +78,7 @@ try:
 except Exception as e:
     print("Failed to load pipeline 15:", e)
 
-pipeline18_path = '/Volumes/Maestria/GitHub/NEO/NEO/Exports/API/pipeline18.sav'
+pipeline18_path = 'Exports/API/pipeline18.sav'
 
 with open(pipeline18_path, 'rb') as file1:
     print(file1.read(100))  
@@ -88,7 +88,7 @@ try:
 except Exception as e:
     print("Failed to load pipeline 18:", e)
 
-model5_path = '/Volumes/Maestria/GitHub/NEO/NEO/Exports/API/best_model_5.sav'
+model5_path = 'Exports/API/best_model_5.sav'
 
 with open(model5_path, 'rb') as file:
     print(file.read(100))
@@ -98,7 +98,7 @@ try:
 except Exception as e:
     print("Failed to load model 5:", e)
 
-model11_path = '/Volumes/Maestria/GitHub/NEO/NEO/Exports/API/best_model_11.sav'
+model11_path = 'Exports/API/best_model_11.sav'
 
 with open(model11_path, 'rb') as file:
     print(file.read(100))
@@ -108,7 +108,7 @@ try:
 except Exception as e:
     print("Failed to load model 11:", e)
 
-model15_path = '/Volumes/Maestria/GitHub/NEO/NEO/Exports/API/best_model_15.sav'
+model15_path = 'Exports/API/best_model_15.sav'
 
 with open(model15_path, 'rb') as file:
     print(file.read(100))
@@ -118,7 +118,7 @@ try:
 except Exception as e:
     print("Failed to load model 15:", e)
 
-model18_path = '/Volumes/Maestria/GitHub/NEO/NEO/Exports/API/best_model_18.sav'
+model18_path = 'Exports/API/best_model_18.sav'
 
 with open(model18_path, 'rb') as file:
     print(file.read(100))

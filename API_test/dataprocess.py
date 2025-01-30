@@ -545,6 +545,47 @@ class scalesplit:
 
         return X_train, X_test, y_train, y_test
     
+    def ttsplit2(self):
+                
+        df_target = self.df['is_hazardous']
+        df_target_array = df_target.values
+        df_features = self.df.drop(columns=['is_hazardous'])
+        df_features_array = df_features.values
+
+        num_features = len(df_features.columns)
+
+        if num_features == 5:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+                ])
+        elif num_features == 11:    
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+            ])
+
+        elif num_features == 15:       
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
+
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
+
+        # df_preprocessed = pipeline.fit_transform(self.df)
+        # df_preprocessed
+
+        X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test_size=0.2, random_state=42)
+
+
+        X_train = pipeline.fit_transform(X_train)
+        X_test = pipeline.transform(X_test)
+
+        return X_train, X_test, y_train, y_test
+    
     def sample(self, n):
 
         X_train, X_test, y_train, y_test = self.ttsplit()

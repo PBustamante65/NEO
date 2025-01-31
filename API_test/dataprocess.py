@@ -437,8 +437,8 @@ class OverallProcessor:
         self.df.drop(columns=['neo_id', 'name', 'orbiting_body'], inplace=True)
 
         self.df.dropna(inplace=True)
-        le = LabelEncoder()
-        self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
+        # le = LabelEncoder()
+        # self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
 
         return self.df
 
@@ -551,6 +551,9 @@ class scalesplit:
         df_target_array = df_target.values
         df_features = self.df.drop(columns=['is_hazardous'])
         df_features_array = df_features.values
+
+        le = LabelEncoder()
+        self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
 
         num_features = len(df_features.columns)
 

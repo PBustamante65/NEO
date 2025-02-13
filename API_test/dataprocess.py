@@ -349,15 +349,15 @@ class OverallProcessor:
             estimated_diameter_average = (self.df['estimated_diameter_min'].astype(float) + self.df['estimated_diameter_max'].astype(float)) / 2
             self.df['estimated_diameter_average'] = estimated_diameter_average
 
-        def encoder(self):
-            le = LabelEncoder()
-            self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
+        # def encoder(self):
+        #     le = LabelEncoder()
+        #     self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
 
         explode_approach(self)
         clean_diameter(self)
         clean_orbits(self)
         clean_df(self)
-        encoder(self)
+        # encoder(self)
         return self.df  
     
     def clean2(self):
@@ -421,15 +421,15 @@ class OverallProcessor:
             estimated_diameter_average = (self.df['estimated_diameter_min'].astype(float) + self.df['estimated_diameter_max'].astype(float)) / 2
             self.df['estimated_diameter_average'] = estimated_diameter_average
 
-        def encoder(self):
-            le = LabelEncoder()
-            self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
+        # def encoder(self):
+        #     le = LabelEncoder()
+        #     self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
 
         explode_approach(self)
         clean_diameter(self)
         clean_orbits(self)
         clean_df(self)
-        encoder(self)
+        # encoder(self)
         return self.df  
     
     def clean3(self):
@@ -450,6 +450,17 @@ class OverallProcessor:
         oversampled_X, oversampled_Y = sm.fit_resample(self.df_test.drop('is_hazardous', axis=1), self.df_test['is_hazardous'])
         self.df = pd.concat([pd.DataFrame(oversampled_Y), pd.DataFrame(oversampled_X)], axis=1)
         return self.df
+
+    def smote2(self, X_train, y_train):
+             
+        self.X_train = X_train
+        self.y_train = y_train
+
+        sm = SMOTE(sampling_strategy='minority', random_state=42)
+        oversampled_X, oversampled_Y = sm.fit_resample(self.X_train, self.y_train)
+        self.df = pd.concat([pd.DataFrame(oversampled_Y), pd.DataFrame(oversampled_X)], axis=1)
+        return oversampled_X, oversampled_Y
+        
     
     def adasyn(self):
         self.df_test = self.df.copy()
@@ -458,6 +469,15 @@ class OverallProcessor:
         oversampled_X, oversampled_Y = ada.fit_resample(self.df_test.drop('is_hazardous', axis=1), self.df_test['is_hazardous'])
         self.df = pd.concat([pd.DataFrame(oversampled_Y), pd.DataFrame(oversampled_X)], axis=1)
         return self.df
+    
+    def adasyn2(self, X_train, y_train):
+        self.X_train = X_train
+        self.y_train = y_train
+
+        ada = ADASYN(sampling_strategy='minority', random_state=42)
+        oversampled_X, oversampled_Y = ada.fit_resample(self.X_train, self.y_train)
+        self.df = pd.concat([pd.DataFrame(oversampled_Y), pd.DataFrame(oversampled_X)], axis=1)
+        return oversampled_X, oversampled_Y
         
     def rus(self):
         self.df_test = self.df.copy()
@@ -470,6 +490,16 @@ class OverallProcessor:
         self.df = pd.concat([pd.DataFrame(y_resampled), pd.DataFrame(X_resampled)], axis=1)
         self.df.reset_index(drop=True, inplace=True)
         return self.df
+    
+    def rus2(self, X_train, y_train):
+        self.X_train = X_train
+        self.y_train = y_train
+
+        rus = RandomUnderSampler(random_state=42)
+        X_resampled, y_resampled = rus.fit_resample(self.X_train, self.y_train)
+        self.df = pd.concat([pd.DataFrame(y_resampled), pd.DataFrame(X_resampled)], axis=1)
+        self.df.reset_index(drop=True, inplace=True)
+        return X_resampled, y_resampled
     
 
 class scalesplit:
@@ -545,7 +575,7 @@ class scalesplit:
 
         return X_train, X_test, y_train, y_test
     
-    def ttsplit2(self):
+    def ttsplitsmote(self):
                 
         df_target = self.df['is_hazardous']
         df_target_array = df_target.values
@@ -553,7 +583,7 @@ class scalesplit:
         df_features_array = df_features.values
 
         le = LabelEncoder()
-        self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
+        # self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
 
         num_features = len(df_features.columns)
 
@@ -586,6 +616,70 @@ class scalesplit:
 
         X_train = pipeline.fit_transform(X_train)
         X_test = pipeline.transform(X_test)
+        y_train = le.fit_transform(y_train)
+        y_test = le.transform(y_test)
+
+        sm = SMOTE(sampling_strategy='minority', random_state=42)
+        oversampled_X, oversampled_Y = sm.fit_resample(X_train, y_train)
+
+        X_train = oversampled_X
+        y_train = oversampled_Y
+
+
+
+        return X_train, X_test, y_train, y_test
+    
+    def ttsplitadasyn(self):
+                
+        df_target = self.df['is_hazardous']
+        df_target_array = df_target.values
+        df_features = self.df.drop(columns=['is_hazardous'])
+        df_features_array = df_features.values
+
+        le = LabelEncoder()
+        # self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
+
+        num_features = len(df_features.columns)
+
+        if num_features == 5:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+                ])
+        elif num_features == 11:    
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+            ])
+
+        elif num_features == 15:       
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
+
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
+
+        # df_preprocessed = pipeline.fit_transform(self.df)
+        # df_preprocessed
+
+        X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test_size=0.2, random_state=42)
+
+
+        X_train = pipeline.fit_transform(X_train)
+        X_test = pipeline.transform(X_test)
+        y_train = le.fit_transform(y_train)
+        y_test = le.transform(y_test)
+
+        ada = ADASYN(sampling_strategy='minority', random_state=42)
+        oversampled_X, oversampled_Y = ada.fit_resample(X_train, y_train)
+
+        X_train = oversampled_X
+        y_train = oversampled_Y
+
+
 
         return X_train, X_test, y_train, y_test
     
@@ -608,6 +702,7 @@ class scalesplit:
         X_train_sample, X_test_sample, y_train_sample, y_test_sample = train_test_split(X_train, y_train, test_size=0.20, random_state=42)
 
         return X_train_sample, y_train_sample
+    
 
     def scale(self):
 

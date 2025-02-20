@@ -52,6 +52,7 @@ from ngboost import NGBClassifier
 from ngboost.distns import Normal
 from ngboost.scores import MLE
 from sklearn.neural_network import MLPClassifier
+from sklearn.linear_model import SGDClassifier
 
 
 
@@ -578,12 +579,10 @@ class scalesplit:
     def ttsplitsmote(self):
                 
         df_target = self.df['is_hazardous']
-        df_target_array = df_target.values
         df_features = self.df.drop(columns=['is_hazardous'])
-        df_features_array = df_features.values
 
         le = LabelEncoder()
-        # self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
+
 
         num_features = len(df_features.columns)
 
@@ -608,8 +607,6 @@ class scalesplit:
         pipeline = Pipeline([
             ('preprocess', preprocess)])
 
-        # df_preprocessed = pipeline.fit_transform(self.df)
-        # df_preprocessed
 
         X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test_size=0.2, random_state=42)
 
@@ -632,12 +629,11 @@ class scalesplit:
     def ttsplitadasyn(self):
                 
         df_target = self.df['is_hazardous']
-        df_target_array = df_target.values
         df_features = self.df.drop(columns=['is_hazardous'])
-        df_features_array = df_features.values
+
 
         le = LabelEncoder()
-        # self.df['is_hazardous'] = le.fit_transform(self.df['is_hazardous'])
+
 
         num_features = len(df_features.columns)
 
@@ -662,9 +658,6 @@ class scalesplit:
         pipeline = Pipeline([
             ('preprocess', preprocess)])
 
-        # df_preprocessed = pipeline.fit_transform(self.df)
-        # df_preprocessed
-
         X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test_size=0.2, random_state=42)
 
 
@@ -679,6 +672,100 @@ class scalesplit:
         X_train = oversampled_X
         y_train = oversampled_Y
 
+
+
+        return X_train, X_test, y_train, y_test
+    
+
+    def ttsplitrus(self):
+                
+        df_target = self.df['is_hazardous']
+        df_features = self.df.drop(columns=['is_hazardous'])
+
+        le = LabelEncoder()
+
+
+        num_features = len(df_features.columns)
+
+        if num_features == 5:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+                ])
+        elif num_features == 11:    
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+            ])
+
+        elif num_features == 15:       
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
+
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
+
+
+        X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test_size=0.2, random_state=42)
+
+
+        X_train = pipeline.fit_transform(X_train)
+        X_test = pipeline.transform(X_test)
+        y_train = le.fit_transform(y_train)
+        y_test = le.transform(y_test)
+
+        rus = RandomUnderSampler(random_state=42)
+        oversampled_X, oversampled_Y = rus.fit_resample(X_train, y_train)
+
+        X_train = oversampled_X
+        y_train = oversampled_Y
+
+
+
+        return X_train, X_test, y_train, y_test
+    
+
+    def ttsplitimbalance(self):
+                
+        df_target = self.df['is_hazardous']
+        df_features = self.df.drop(columns=['is_hazardous'])
+
+        le = LabelEncoder()
+
+
+        num_features = len(df_features.columns)
+
+        if num_features == 5:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity', 'miss_distance'])
+                ])
+        elif num_features == 11:    
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'estimated_diameter_min', 'estimated_diameter_max', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers','minimum_orbit_intersection', 'eccentricity', 'inclination', 'perihilion_distance', 'aphelion_distance', 'estimated_diameter_average'])
+            ])
+
+        elif num_features == 15:       
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly'])
+            ])
+        elif num_features == 18:
+            preprocess = ColumnTransformer([
+                ('scaler', StandardScaler(), ['absolute_magnitude_h', 'relative_velocity.kilometers_per_hour', 'miss_distance.kilometers', 'orbit_uncertainty', 'minimum_orbit_intersection','jupiter_tisserand_invariant', 'eccentricity', 'semi_major_axis', 'inclination', 'ascending_node_longitude', 'perihelion_distance', 'perihelion_argument', 'aphelion_distance', 'perihelion_time', 'mean_anomaly', 'estimated_diameter_min', 'estimated_diameter_max', 'estimated_diameter_average'])
+            ])
+
+        pipeline = Pipeline([
+            ('preprocess', preprocess)])
+
+        X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test_size=0.2, random_state=42)
+
+
+        X_train = pipeline.fit_transform(X_train)
+        X_test = pipeline.transform(X_test)
+        y_train = le.fit_transform(y_train)
+        y_test = le.transform(y_test)
 
 
         return X_train, X_test, y_train, y_test
@@ -743,42 +830,44 @@ class LogRegression:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='newton-cholesky', warm_start=True)
+#        self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='newton-cholesky', warm_start=True)
         
     def fit(self):
 
-#             def gridsearch():
-#                 logReg = LogisticRegression()
+            def gridsearch():
+                logReg = LogisticRegression()
 
-#                 param_grid = {'solver': ['liblinear', 'newton-cholesky'],
-#               'penalty':['none', 'l2'],
-#               'C':[0.001, 0.01, 0.1, 1, 10, 100],
-#               'n_jobs': [8],
-#               'random_state': [0, 42, 32],
-#               'fit_intercept': [True, False],
-#               'warm_start': [True, False]
-# }
-
-
-#                 grid_search = GridSearchCV(logReg, param_grid, cv=5, verbose=0, n_jobs=-1)
-#                 grid_search.fit(self.X_train, self.y_train)
+                param_grid = {'solver': ['liblinear', 'newton-cholesky'],
+              'penalty':['none', 'l2', 'l1', 'elasticnet'],
+              'C':[0.001, 0.01, 0.1, 1, 10, 100],
+              'n_jobs': [8],
+              'random_state': [0, 42, 32],
+              'fit_intercept': [True, False],
+              'warm_start': [True, False]
+}
 
 
-#                 self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='liblinear', warm_start=True) 
+                grid_search = GridSearchCV(logReg, param_grid, cv=5, verbose=0, n_jobs=-1)
+                grid_search.fit(self.X_train, self.y_train)
 
 
-#                 print(f'Best parameters: {grid_search.best_params_}')
-#                 print(f'Best Score: {grid_search.best_score_}')
-#                 print(f'Best Estimator: {grid_search.best_estimator_} ')
+#                self.best_estimator_ = LogisticRegression(C=0.001, fit_intercept=False, n_jobs=8, random_state=0,solver='liblinear', warm_start=True) 
+
+
+                print(f'Best parameters: {grid_search.best_params_}')
+                print(f'Best Score: {grid_search.best_score_}')
+                print(f'Best Estimator: {grid_search.best_estimator_} ')
+
+                return grid_search.best_estimator_
 
             def Regression(self):
 
                 warnings.filterwarnings("ignore", message=".*'n_jobs' > 1 does not have any effect when 'solver' is set to 'liblinear'.*")
 
-                k = 5 
+                k = 10
                 kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
-                best_model = self.best_estimator_
+                best_model = gridsearch()
                 best_model.fit(self.X_train, self.y_train)
 
                 prediction = best_model.predict(self.X_test)
@@ -832,18 +921,43 @@ class supportvm:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.bestsvm = SVC(C=10000, random_state=42)
+        # self.bestsvm = SVC(C=10000, random_state=42)
 
     def fit(self):
 
         # bestsvm = SVC(C=10000, random_state=42)
 
+        # svmgrid = SVC()
 
-        k = 5 
+        # param_grid = { 'C' : [2000, 5000, 10000],
+        #      'gamma' : ['scale', 'auto']
+        # }
+
+        sgdc = SGDClassifier()
+
+        param_grid = { 'loss' : ['modified_huber', 'perceptron', 'log_loss','squared_error', 'hinge'],
+                      'penalty': ['l2', 'l1', 'elasticnet'],
+                      'alpha': [0.0001, 0.001, 0.01],
+                      'learning_rate': ['constant', 'adaptive'],
+                      'eta0': [0.01,0.1,1]
+        }
+
+
+        grid_search = GridSearchCV(sgdc, param_grid, cv=5, verbose=1, n_jobs=-1)
+        grid_search.fit(self.X_train, self.y_train)
+
+
+
+        print(f'Best parameters: {grid_search.best_params_}')
+        print(f'Best Score: {grid_search.best_score_}')
+        print(f'Best Estimator: {grid_search.best_estimator_} ')
+
+
+        k = 10 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
         # svm = SVC(C=10000, random_state=42, kernel='rbf', gamma='scale')
-        svm = self.bestsvm
+        svm = grid_search.best_estimator_
         svm.fit(self.X_train, self.y_train)
 
         prediction = svm.predict(self.X_test)
@@ -957,20 +1071,36 @@ class RandomForest:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.randomforest = RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy',random_state=42)
+        #self.randomforest = RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy',random_state=42)
         
     def fit(self):
 
         warnings.filterwarnings("ignore", message=".*class_weight presets 'balanced' or 'balanced_subsample' are not recommended for warm_start if the fitted data differs from the full dataset.*", module="sklearn.ensemble._forest")
 
 
+        randomfc = RandomForestClassifier(n_estimators=100, random_state=42, warm_start=True, class_weight='balanced_subsample')
+
+        param_grid = { 'criterion': ['gini', 'entropy'],
+                'max_features': ['auto', 'sqrt', 'log2'], 
+                'bootstrap': [True, False],
+        }
+
+        grid_search = GridSearchCV(randomfc, param_grid, cv=5, verbose=1, n_jobs=-1)
+        grid_search.fit(self.X_train, self.y_train)
+
+
+
+        print(f'Best parameters: {grid_search.best_params_}')
+        print(f'Best Score: {grid_search.best_score_}')
+        print(f'Best Estimator: {grid_search.best_estimator_} ')
+
         k = 5 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
+        randomforest = grid_search.best_estimator_
+        randomforest.fit(self.X_train, self.y_train)
 
-        self.randomforest.fit(self.X_train, self.y_train)
-
-        prediction = self.randomforest.predict(self.X_test)
+        prediction = randomforest.predict(self.X_test)
 
         accuracy = accuracy_score(self.y_test, prediction)
         recall = recall_score(prediction, self.y_test)
@@ -982,7 +1112,7 @@ class RandomForest:
         print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
 
-        r2 =  cross_val_score(self.randomforest,self.X_train,self.y_train,cv=kf,scoring='r2')
+        r2 =  cross_val_score(randomforest,self.X_train,self.y_train,cv=kf,scoring='r2')
         print(f'Cross validation score: {r2}\n')
 
         np.mean(r2)

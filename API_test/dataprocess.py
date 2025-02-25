@@ -835,7 +835,7 @@ class LogRegression:
     def fit(self):
 
             def gridsearch():
-                logReg = LogisticRegression()
+                logReg = LogisticRegression(random_state=42)
 
                 param_grid = {'solver': ['liblinear', 'newton-cholesky'],
               'penalty':['none', 'l2', 'l1', 'elasticnet'],
@@ -933,7 +933,7 @@ class supportvm:
         #      'gamma' : ['scale', 'auto']
         # }
 
-        sgdc = SGDClassifier()
+        sgdc = SGDClassifier(random_state=42)
 
         param_grid = { 'loss' : ['modified_huber', 'perceptron', 'log_loss','squared_error', 'hinge'],
                       'penalty': ['l2', 'l1', 'elasticnet'],
@@ -1078,10 +1078,10 @@ class RandomForest:
         warnings.filterwarnings("ignore", message=".*class_weight presets 'balanced' or 'balanced_subsample' are not recommended for warm_start if the fitted data differs from the full dataset.*", module="sklearn.ensemble._forest")
 
 
-        randomfc = RandomForestClassifier(n_estimators=100, random_state=42, warm_start=True, class_weight='balanced_subsample')
+        randomfc = RandomForestClassifier(n_estimators=100, random_state=42)
 
         param_grid = { 'criterion': ['gini', 'entropy'],
-                'max_features': ['auto', 'sqrt', 'log2'], 
+                'max_features': ['sqrt', 'log2'], 
                 'bootstrap': [True, False],
         }
 
@@ -1094,7 +1094,7 @@ class RandomForest:
         print(f'Best Score: {grid_search.best_score_}')
         print(f'Best Estimator: {grid_search.best_estimator_} ')
 
-        k = 5 
+        k = 10 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
         randomforest = grid_search.best_estimator_
@@ -1180,18 +1180,41 @@ class xgbClassifier:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.bestxgb = xgb.XGBClassifier(max_depth=3, n_estimators=200, learning_rate=0.01, random_state=42, gamma=0.1, alpha=0.1, min_child_weight=10)
+        # self.bestxgb = xgb.XGBClassifier(max_depth=3, n_estimators=200, learning_rate=0.01, random_state=42, gamma=0.1, alpha=0.1, min_child_weight=10)
 
     def fit(self):
 
+        xgbgrid = xgb.XGBClassifier(random_state=42)
+        
+        param_grid = {
+            'n_estimators': [100, 200, 300],  # Number of boosting rounds
+            'learning_rate': [0.01, 0.1, 0.2],  # Step size shrinkage
+            'max_depth': [3, 5, 7],  # Maximum tree depth for base learners
+            'min_child_weight': [1, 3, 5],  # Minimum sum of instance weight(hessian) needed in a child
+            'gamma': [0, 0.1, 0.2]  # Minimum loss reduction required to make a further partition on a leaf node
+            # 'subsample': [0.8, 1.0],  # Subsample ratio of the training instances
+            # 'colsample_bytree': [0.8, 1.0],  # Subsample ratio of columns when constructing each tree
+            # 'reg_alpha': [0, 0.01, 0.1],  # L1 regularization term on weights
+            # 'reg_lambda': [1, 1.5, 2.0]  # L2 regularization term on weights
+        }
 
-        k = 5 
+        grid_search = GridSearchCV(xgbgrid, param_grid, cv=5, verbose=1, n_jobs=-1)
+        grid_search.fit(self.X_train, self.y_train)
+
+
+
+        print(f'Best parameters: {grid_search.best_params_}')
+        print(f'Best Score: {grid_search.best_score_}')
+        print(f'Best Estimator: {grid_search.best_estimator_} ')
+
+        k = 10 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
 
-        self.bestxgb.fit(self.X_train, self.y_train)
+        bestxgb = grid_search.best_estimator_
+        bestxgb.fit(self.X_train, self.y_train)
 
-        prediction = self.bestxgb.predict(self.X_test)
+        prediction = bestxgb.predict(self.X_test)
 
         accuracy = accuracy_score(self.y_test, prediction)
         recall = recall_score(prediction, self.y_test)
@@ -1203,7 +1226,7 @@ class xgbClassifier:
         print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
 
-        r2 =  cross_val_score(self.bestxgb,self.X_train,self.y_train,cv=kf,scoring='r2')
+        r2 =  cross_val_score(bestxgb,self.X_train,self.y_train,cv=kf,scoring='r2')
         print(f'Cross validation score: {r2}\n')
 
         np.mean(r2)
@@ -1242,16 +1265,33 @@ class GradientBoost:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.bestgb = GradientBoostingClassifier(n_estimators=200,learning_rate=0.1,random_state=42,max_depth=3)
+        #self.bestgb = GradientBoostingClassifier(n_estimators=200,learning_rate=0.1,random_state=42,max_depth=3)
 
     def fit(self):
 
-        k = 5 
+        gbgrid = GradientBoostingClassifier(random_state=42)
+        
+        param_grid = {
+            'n_estimators': [100, 200, 300],  # Number of boosting stages
+            'learning_rate': [0.01, 0.1, 0.2],  # Step size shrinkage
+            'max_depth': [3, 5, 7],  # Maximum tree depth for base learners
+            'max_features': ['sqrt', 'log2', None]  # The number of features to consider when looking for the best split
+        }
+
+        grid_search = GridSearchCV(gbgrid, param_grid, cv=5, verbose=1, n_jobs=-1)
+        grid_search.fit(self.X_train, self.y_train)
+
+        print(f'Best parameters: {grid_search.best_params_}')
+        print(f'Best Score: {grid_search.best_score_}')
+        print(f'Best Estimator: {grid_search.best_estimator_} ')
+
+        k = 10 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
-        self.bestgb.fit(self.X_train, self.y_train)
+        bestgb = grid_search.best_estimator_
+        bestgb.fit(self.X_train, self.y_train)
 
-        prediction = self.bestgb.predict(self.X_test)
+        prediction = bestgb.predict(self.X_test)
 
         accuracy = accuracy_score(self.y_test, prediction)
         recall = recall_score(prediction, self.y_test)
@@ -1262,7 +1302,7 @@ class GradientBoost:
 
         print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
-        r2 =  cross_val_score(self.bestgb,self.X_train,self.y_train,cv=kf,scoring='r2')
+        r2 =  cross_val_score(bestgb,self.X_train,self.y_train,cv=kf,scoring='r2')
         print(f'Cross validation score: {r2}\n')
 
         np.mean(r2)
@@ -1301,16 +1341,34 @@ class AdaBoost:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.bestada = AdaBoostClassifier( RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy', random_state=42), n_estimators=100, random_state=42, learning_rate=0.1)
+        #self.bestada = AdaBoostClassifier( RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy', random_state=42),random_state=42)
 
     def fit(self):
 
-        k = 5 
+        abgrid = AdaBoostClassifier( RandomForestClassifier(class_weight='balanced_subsample', criterion='entropy', random_state=42),random_state=42)
+        
+        param_grid = {
+            'n_estimators': [50, 100, 200],  # Number of boosting stages
+            'learning_rate': [0.01, 0.1, 0.5, 1.0],  # Weight applied to each classifier at each boosting iteration
+            'algorithm': ['SAMME', 'SAMME.R']    # The number of features to consider when looking for the best split
+        }
+
+        grid_search = GridSearchCV(abgrid, param_grid, cv=5, verbose=1, n_jobs=-1)
+        grid_search.fit(self.X_train, self.y_train)
+
+        print(f'Best parameters: {grid_search.best_params_}')
+        print(f'Best Score: {grid_search.best_score_}')
+        print(f'Best Estimator: {grid_search.best_estimator_} ')
+
+
+        k = 10
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
-        self.bestada.fit(self.X_train, self.y_train)
 
-        prediction = self.bestada.predict(self.X_test) 
+        bestada = grid_search.best_estimator_
+        bestada.fit(self.X_train, self.y_train)
+
+        prediction = bestada.predict(self.X_test) 
 
         accuracy = accuracy_score(self.y_test, prediction)
         recall = recall_score(prediction, self.y_test)
@@ -1321,7 +1379,7 @@ class AdaBoost:
 
         print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
-        r2 =  cross_val_score(self.bestada,self.X_train,self.y_train,cv=kf,scoring='r2')
+        r2 =  cross_val_score(bestada,self.X_train,self.y_train,cv=kf,scoring='r2')
         print(f'Cross validation score: {r2}\n')
 
         np.mean(r2)
@@ -1361,16 +1419,35 @@ class ngboost:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.bestngb = NGBClassifier(n_estimators=100, random_state=42)
+        #self.bestngb = NGBClassifier(n_estimators=100, random_state=42)
 
     def fit(self):
 
-        k = 5 
+        ngbgrid = NGBClassifier(random_state = 42)
+
+        param_grid = {
+            'n_estimators': [100, 200, 300],  # Number of boosting stages
+            'learning_rate': [0.01, 0.1, 0.2],  # Step size shrinkage
+            'minibatch_frac': [0.5, 0.7, 1.0],
+            'max_depth': [3, 5, 7]
+
+        }
+
+        grid_search = GridSearchCV(ngbgrid, param_grid, cv=5, verbose=1, n_jobs=-1)
+        grid_search.fit(self.X_train, self.y_train)
+
+        print(f'Best parameters: {grid_search.best_params_}')
+        print(f'Best Score: {grid_search.best_score_}')
+        print(f'Best Estimator: {grid_search.best_estimator_} ')
+
+        k = 10
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
-        self.bestngb.fit(self.X_train, self.y_train)
 
-        prediction = self.bestngb.predict(self.X_test)
+        bestngb = grid_search.best_estimator_
+        bestngb.fit(self.X_train, self.y_train)
+
+        prediction = bestngb.predict(self.X_test)
 
         accuracy = accuracy_score(self.y_test, prediction)
         recall = recall_score(prediction, self.y_test)
@@ -1381,7 +1458,7 @@ class ngboost:
 
         print(f'Classification Report: \n {classification_report(self.y_test, prediction)}\n')
 
-        r2 =  cross_val_score(self.bestngb,self.X_train,self.y_train,cv=kf,scoring='r2')
+        r2 =  cross_val_score(bestngb,self.X_train,self.y_train,cv=kf,scoring='r2')
         print(f'Cross validation score: {r2}\n')
 
         np.mean(r2)
@@ -1424,7 +1501,7 @@ class ANN:
 
     def fit(self):
 
-        k = 5 
+        k = 10 
         kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
 
         self.bestmlp.fit(self.X_train, self.y_train)
